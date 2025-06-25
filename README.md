@@ -24,13 +24,11 @@ Des instructions d’installation pour une version locale seront ajoutées dans 
 
 ## 📸 Aperçu du dashboard
 
-> *Ajoutez ici une capture d'écran du dashboard dans le dossier `public` ou à la racine du dépôt, et remplacez la ligne ci-dessous par le lien correct.*
-
 ![Aperçu du Dashboard](https://cdn.discordapp.com/attachments/1135868312883052596/1387437106170822827/image.png?ex=685d56ff&is=685c057f&hm=a7db6d93bf69bd1d313a3838dd682b42415a7720d2564689826fc7e892222ad3&)
 
 ## 👥 Auteurs
 
-Projet développé par [ton nom ou pseudo ici].
+Projet développé par KARU.
 
 ## 📄 Licence
 
