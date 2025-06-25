@@ -61,12 +61,12 @@ import {
 import team2 from "assets/images/team-2.jpg";
 import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
 
-function DashboardNavbar({ absolute, light, isMini }) {
+function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useVisionUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
-  const route = useLocation().pathname.split("/").slice(1);
+  const route = useLocation().pathname.split("/").slice(1) || [];
 
   useEffect(() => {
     // Setting the navbar type
@@ -146,25 +146,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <VuiBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-          <Breadcrumbs icon="home" title={route[route.length - 1]} route={route} light={light} />
+          <Breadcrumbs icon="home" title={route && route.length > 0 ? route[route.length - 1] : ""} route={route} light={light} />
         </VuiBox>
         {isMini ? null : (
           <VuiBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <VuiBox pr={1}>
-              <VuiInput
-                placeholder="Type here..."
-                icon={{ component: "search", direction: "left" }}
-                sx={({ breakpoints }) => ({
-                  [breakpoints.down("sm")]: {
-                    maxWidth: "80px",
-                  },
-                  [breakpoints.only("sm")]: {
-                    maxWidth: "80px",
-                  },
-                  backgroundColor: "info.main !important",
-                })}
-              />
-            </VuiBox>
             <VuiBox color={light ? "white" : "inherit"}>
               <Link to="/authentication/sign-in">
                 <IconButton sx={navbarIconButton} size="small">
@@ -196,14 +181,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 size="small"
                 color="inherit"
                 sx={navbarIconButton}
-                onClick={handleConfiguratorOpen}
-              >
-                <Icon>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarIconButton}
                 aria-controls="notification-menu"
                 aria-haspopup="true"
                 variant="contained"
@@ -219,13 +196,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
     </AppBar>
   );
 }
-
-// Setting default values for the props of DashboardNavbar
-DashboardNavbar.defaultProps = {
-  absolute: false,
-  light: false,
-  isMini: false,
-};
 
 // Typechecking props for the DashboardNavbar
 DashboardNavbar.propTypes = {

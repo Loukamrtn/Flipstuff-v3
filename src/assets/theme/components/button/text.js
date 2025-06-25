@@ -77,17 +77,19 @@ export default {
   },
 
   primary: {
-    color: primary.main,
+    color: colors.accentGlow.main,
     backgroundColor: transparent.main,
 
     "&:hover": {
-      color: primary.focus,
+      color: colors.primary.main,
       backgroundColor: transparent.main,
+      textShadow: "0 0 8px #ff4fa3",
     },
 
     "&:focus:not(:hover)": {
-      color: primary.focus,
+      color: colors.primary.main,
       backgroundColor: transparent.focus,
+      textShadow: "0 0 12px #ff4fa3",
       boxShadow: "none",
     },
   },

@@ -24,15 +24,19 @@
 export default {
   // Vision UI Colors
   background: {
-    default: "#f8f9fa",
+    default: "#23141c",
+    paper: "#442536",
+    card: "#442536",
   },
 
   sidenav: {
-    button: "#1a1f37",
+    button: "#442536",
   },
 
   text: {
-    main: "#a0aec0",
+    main: "#fff",
+    secondary: "#e6e6e6",
+    disabled: "#bdbdbd",
     focus: "#ffffff",
   },
 
@@ -46,8 +50,8 @@ export default {
   },
 
   brand: {
-    main: "#0075ff",
-    focus: "#0075ff",
+    main: "#ff4fa3",
+    focus: "#ff4fa3",
   },
 
   black: {
@@ -57,7 +61,8 @@ export default {
   },
 
   primary: {
-    main: "#4318ff",
+    main: "#e7125d",
+    state: "#e7125d",
     focus: "#9f7aea",
   },
 
@@ -67,8 +72,8 @@ export default {
   },
 
   lightblue: {
-    main: "#4299e1",
-    focus: "#4299e1",
+    main: "#ff4fa3",
+    focus: "#e7125d",
   },
 
   orange: {
@@ -96,15 +101,15 @@ export default {
 
   // Other colors
   info: {
-    main: "#0075ff",
-    focus: "#3993fe",
+    main: "#ff4fa3",
+    focus: "#e7125d",
     charts: {
-      100: "#2d8cfc",
-      200: "#2370cc",
-      300: "#2370cc",
-      400: "#0f4a91",
-      500: "#073a78",
-      600: "#012654",
+      100: "#ff4fa3",
+      200: "#e7125d",
+      300: "#e7125d",
+      400: "#e7125d",
+      500: "#e7125d",
+      600: "#e7125d",
     },
   },
 
@@ -137,14 +142,14 @@ export default {
   gradients: {
     navbar: {
       deg: "123.64deg",
-      main: "rgba(255, 255, 255, 0) -22.38%",
-      state: "rgba(255, 255, 255, 0.039) 70.38%",
+      main: "#23141c",
+      state: "#442536",
     },
 
     sidenav: {
       deg: "127.09",
-      main: "rgba(6, 11, 40, 0.94) 19.41%",
-      state: "rgba(10, 14, 35, 0.49) 76.65%",
+      main: "#23141c",
+      state: "#442536",
     },
 
     borderLight: {
@@ -180,20 +185,20 @@ export default {
 
     card: {
       deg: "127.09",
-      main: "rgba(6, 11, 40, 0.94) 19.41%",
-      state: "rgba(10, 14, 35, 0.49) 76.65%",
+      main: "rgba(68,37,54,0.95)",
+      state: "rgba(231,18,93,0.15)",
     },
 
     menu: {
       deg: "126.97",
-      main: "#05153f 28.26%",
-      state: "#072561 91.2%",
+      main: "#442536",
+      state: "#e7125d",
     },
 
     cardContent: {
-      deg: "126.97",
-      main: "rgb(6, 11, 40) 28.26%",
-      state: "rgb(10, 14, 35) 91.2%",
+      deg: "127.09",
+      main: "#442536",
+      state: "#ff4fa3",
     },
 
     box: {
@@ -210,8 +215,8 @@ export default {
 
     primary: {
       deg: "97.89",
-      main: "#4318ff",
-      state: "#9f7aea",
+      main: "#e7125d",
+      state: "#ff4fa3",
     },
 
     secondary: {
@@ -226,8 +231,8 @@ export default {
     },
 
     info: {
-      main: "#0075ff",
-      state: "#21d4fd",
+      main: "#ff4fa3",
+      state: "#e7125d",
     },
 
     success: {
@@ -332,9 +337,9 @@ export default {
     },
 
     info: {
-      main: "#2152ff",
-      state: "#02c6f3",
-      border: "#b9ecf8",
+      main: "#ff4fa3",
+      state: "#e7125d",
+      border: "#ff4fa3",
     },
 
     success: {
@@ -382,9 +387,9 @@ export default {
     },
 
     info: {
-      basic: "#4299e1",
-      background: "#abe9f7",
-      text: "#08a1c4",
+      basic: "#ff4fa3",
+      background: "#ff4fa3",
+      text: "#e7125d",
     },
 
     success: {
@@ -436,5 +441,21 @@ export default {
 
   tabs: {
     indicator: { boxShadow: "#ddd" },
+  },
+
+  border: {
+    main: "#3a2230",
+  },
+
+  accentGlow: {
+    main: "#ff4fa3",
+  },
+
+  glassBg: {
+    main: "rgba(68,37,54,0.85)",
+  },
+
+  glassBorder: {
+    main: "rgba(231,18,93,0.3)",
   },
 };

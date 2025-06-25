@@ -22,19 +22,18 @@ import ReactApexChart from "react-apexcharts";
 class LineChart extends React.Component {
   constructor(props) {
     super(props);
-
+    const { lineChartData = [], lineChartOptions = {} } = props;
     this.state = {
-      chartData: [],
-      chartOptions: {},
+      chartData: Array.isArray(lineChartData) ? lineChartData : [],
+      chartOptions: lineChartOptions || {},
     };
   }
 
   componentDidMount() {
-    const { lineChartData, lineChartOptions } = this.props;
-
+    const { lineChartData = [], lineChartOptions = {} } = this.props;
     this.setState({
-      chartData: lineChartData,
-      chartOptions: lineChartOptions,
+      chartData: Array.isArray(lineChartData) ? lineChartData : [],
+      chartOptions: lineChartOptions || {},
     });
   }
 

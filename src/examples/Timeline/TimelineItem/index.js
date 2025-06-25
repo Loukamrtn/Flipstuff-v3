@@ -33,7 +33,7 @@ import { useTimeline } from "examples/Timeline/context";
 // Custom styles for the TimelineItem
 import { timelineItem } from "examples/Timeline/TimelineItem/styles";
 
-function TimelineItem({ color, icon, title, dateTime, description, badges, lastItem }) {
+function TimelineItem({ color = "info", icon, title, dateTime, description = "", badges = [], lastItem = false }) {
   const isDark = useTimeline();
 
   const renderBadges =
@@ -87,14 +87,6 @@ function TimelineItem({ color, icon, title, dateTime, description, badges, lastI
     </VuiBox>
   );
 }
-
-// Setting default values for the props of TimelineItem
-TimelineItem.defaultProps = {
-  color: "info",
-  badges: [],
-  lastItem: false,
-  description: "",
-};
 
 // Typechecking props for the TimelineItem
 TimelineItem.propTypes = {

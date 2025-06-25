@@ -71,14 +71,16 @@ export default {
 
   primary: {
     backgroundColor: transparent.main,
-    borderColor: info.main,
+    borderColor: colors.accentGlow.main,
 
     "&:hover": {
       backgroundColor: transparent.main,
+      borderColor: colors.primary.main,
     },
 
     "&:focus:not(:hover)": {
       boxShadow: buttonBoxShadow.stateOfNotHover,
+      borderColor: colors.primary.main,
     },
   },
 

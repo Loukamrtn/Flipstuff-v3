@@ -31,7 +31,7 @@ import VuiPaginationItemRoot from "components/VuiPagination/VuiPaginationItemRoo
 const Context = createContext();
 
 const VuiPagination = forwardRef(
-  ({ item, variant, color, size, active, children, ...rest }, ref) => {
+  ({ item = false, variant = "gradient", color = "info", size = "medium", active = false, children, ...rest }, ref) => {
     const context = item ? useContext(Context) : null;
     const paginationSize = context ? context.size : null;
 
@@ -63,15 +63,6 @@ const VuiPagination = forwardRef(
     );
   }
 );
-
-// Setting default values for the props of VuiPagination
-VuiPagination.defaultProps = {
-  item: false,
-  variant: "gradient",
-  color: "info",
-  size: "medium",
-  active: false,
-};
 
 // Typechecking props for the VuiPagination
 VuiPagination.propTypes = {

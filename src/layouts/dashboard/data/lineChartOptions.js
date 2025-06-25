@@ -32,7 +32,7 @@ export const lineChartOptionsDashboard = {
     curve: "smooth",
   },
   xaxis: {
-    type: "datetime",
+    type: "category",
     categories: [
       "Jan",
       "Feb",
@@ -81,13 +81,13 @@ export const lineChartOptionsDashboard = {
       shade: "dark",
       type: "vertical",
       shadeIntensity: 0,
-      gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+      gradientToColors: undefined,
       inverseColors: true,
       opacityFrom: 0.8,
       opacityTo: 0,
       stops: [],
     },
-    colors: ["#0075FF", "#2CD9FF"],
+    colors: ["#ff4fa3", "#e7125d"],
   },
-  colors: ["#0075FF", "#2CD9FF"],
+  colors: ["#ff4fa3", "#e7125d"],
 };

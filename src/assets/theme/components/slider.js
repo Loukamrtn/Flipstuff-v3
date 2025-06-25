@@ -50,7 +50,7 @@ export default {
     },
 
     track: {
-      backgroundImage: linearGradient(gradients.info.main, gradients.info.state),
+      backgroundImage: linearGradient(gradients.primary.main, gradients.primary.state),
       height: pxToRem(6),
       position: "relative",
       top: pxToRem(2),

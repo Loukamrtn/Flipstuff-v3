@@ -36,7 +36,9 @@ import Table from "examples/Tables/Table";
 import data from "layouts/dashboard/components/Projects/data";
 
 function Projects() {
-  const { columns, rows } = data();
+  const rawData = data();
+  const columns = Array.isArray(rawData.columns) ? rawData.columns : [];
+  const rows = Array.isArray(rawData.rows) ? rawData.rows : [];
   const [menu, setMenu] = useState(null);
 
   const openMenu = ({ currentTarget }) => setMenu(currentTarget);

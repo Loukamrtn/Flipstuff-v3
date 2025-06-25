@@ -30,8 +30,9 @@ import Icon from "@mui/material/Icon";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 
-function Breadcrumbs({ icon, title, route, light }) {
-  const routes = route.slice(0, -1);
+function Breadcrumbs({ icon, title, route, light = false }) {
+  const safeTitle = typeof title === "string" ? title : "";
+  const routes = Array.isArray(route) ? route.slice(0, -1) : (typeof route === "string" ? [route] : []);
 
   return (
     <VuiBox mr={{ xs: 0, xl: 8 }}>
@@ -75,7 +76,7 @@ function Breadcrumbs({ icon, title, route, light }) {
           color={light ? "white" : "dark"}
           sx={{ lineHeight: 0 }}
         >
-          {title.replace("-", " ")}
+          {safeTitle.length > 0 ? safeTitle.replace("-", " ") : ""}
         </VuiTypography>
       </MuiBreadcrumbs>
       <VuiTypography
@@ -85,16 +86,11 @@ function Breadcrumbs({ icon, title, route, light }) {
         color={light ? "white" : "dark"}
         noWrap
       >
-        {title.replace("-", " ")}
+        {safeTitle.length > 0 ? safeTitle.replace("-", " ") : ""}
       </VuiTypography>
     </VuiBox>
   );
 }
-
-// Setting default values for the props of Breadcrumbs
-Breadcrumbs.defaultProps = {
-  light: false,
-};
 
 // Typechecking props for the Breadcrumbs
 Breadcrumbs.propTypes = {

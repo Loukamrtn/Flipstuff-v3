@@ -56,7 +56,7 @@ export default {
     indicator: {
       height: "100%",
       borderRadius: borderRadius.lg,
-      backgroundColor: info.main,
+      backgroundColor: colors.accentGlow.main,
       transition: "all 500ms ease",
     },
   },

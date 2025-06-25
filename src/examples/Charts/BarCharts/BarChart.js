@@ -22,18 +22,18 @@ import Chart from "react-apexcharts";
 class BarChart extends Component {
   constructor(props) {
     super(props);
+    const { barChartData = [], barChartOptions = {} } = props;
     this.state = {
-      chartData: [],
-      chartOptions: {},
+      chartData: Array.isArray(barChartData) ? barChartData : [],
+      chartOptions: barChartOptions || {},
     };
   }
 
   componentDidMount() {
-    const { barChartData, barChartOptions } = this.props;
-
+    const { barChartData = [], barChartOptions = {} } = this.props;
     this.setState({
-      chartData: barChartData,
-      chartOptions: barChartOptions,
+      chartData: Array.isArray(barChartData) ? barChartData : [],
+      chartOptions: barChartOptions || {},
     });
   }
 

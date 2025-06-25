@@ -50,7 +50,7 @@ import { useVisionUIController, setMiniSidenav, setTransparentSidenav } from "co
 import SimmmpleLogo from "examples/Icons/SimmmpleLogo";
 
 // function Sidenav({ color, brand, brandName, routes, ...rest }) {
-function Sidenav({ color, brandName, routes, ...rest }) {
+function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
   const [controller, dispatch] = useVisionUIController();
   const { miniSidenav, transparentSidenav } = controller;
   const location = useLocation();
@@ -83,6 +83,8 @@ function Sidenav({ color, brandName, routes, ...rest }) {
     }
   }, []);
 
+  const iconColor = color === "primary" || color === "info" ? "accentGlow" : color;
+
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
   const renderRoutes = routes.map(({ type, name, icon, title, noCollapse, key, route, href }) => {
     let returnValue;
@@ -97,7 +99,6 @@ function Sidenav({ color, brandName, routes, ...rest }) {
           sx={{ textDecoration: "none" }}
         >
           <SidenavCollapse
-            color={color}
             name={name}
             icon={icon}
             active={key === collapseName}
@@ -107,7 +108,6 @@ function Sidenav({ color, brandName, routes, ...rest }) {
       ) : (
         <NavLink to={route} key={key}>
           <SidenavCollapse
-            color={color}
             key={key}
             name={name}
             icon={icon}
@@ -141,7 +141,7 @@ function Sidenav({ color, brandName, routes, ...rest }) {
   });
 
   return (
-    <SidenavRoot {...rest} variant="permanent" ownerState={{ transparentSidenav, miniSidenav }}>
+    <SidenavRoot {...props} variant="permanent" ownerState={{ transparentSidenav, miniSidenav }}>
       <VuiBox
         pt={3.5}
         pb={0.5}
@@ -164,47 +164,8 @@ function Sidenav({ color, brandName, routes, ...rest }) {
             <Icon sx={{ fontWeight: "bold" }}>close</Icon>
           </VuiTypography>
         </VuiBox>
-        <VuiBox component={NavLink} to="/" display="flex" alignItems="center">
-          <VuiBox
-            sx={
-              ((theme) => sidenavLogoLabel(theme, { miniSidenav }),
-              {
-                display: "flex",
-                alignItems: "center",
-                margin: "0 auto",
-              })
-            }
-          >
-            <VuiBox
-              display="flex"
-              sx={
-                ((theme) => sidenavLogoLabel(theme, { miniSidenav, transparentSidenav }),
-                {
-                  mr: miniSidenav || (miniSidenav && transparentSidenav) ? 0 : 1,
-                })
-              }
-            >
-              <SimmmpleLogo size="24px" />
-            </VuiBox>
-            <VuiTypography
-              variant="button"
-              textGradient={true}
-              color="logo"
-              fontSize={14}
-              letterSpacing={2}
-              fontWeight="medium"
-              sx={
-                ((theme) => sidenavLogoLabel(theme, { miniSidenav, transparentSidenav }),
-                {
-                  opacity: miniSidenav || (miniSidenav && transparentSidenav) ? 0 : 1,
-                  maxWidth: miniSidenav || (miniSidenav && transparentSidenav) ? 0 : "100%",
-                  margin: "0 auto",
-                })
-              }
-            >
-              {brandName}
-            </VuiTypography>
-          </VuiBox>
+        <VuiBox display="flex" alignItems="center" justifyContent="center" py={2}>
+          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.5rem', letterSpacing: '0.05em', fontFamily: 'inherit' }}>Flipstuff</span>
         </VuiBox>
       </VuiBox>
       <Divider light />
@@ -225,36 +186,16 @@ function Sidenav({ color, brandName, routes, ...rest }) {
           },
         })}
       >
-        <SidenavCard color={color} />
-        <VuiBox mt={2}>
-          <VuiButton
-            component="a"
-            href="https://creative-tim.com/product/vision-ui-dashboard-pro-react"
-            target="_blank"
-            rel="noreferrer"
-            variant="gradient"
-            color={color}
-            fullWidth
-          >
-            Upgrade to PRO
-          </VuiButton>
-        </VuiBox>
+        {/* Suppression de la carte/image et du bouton PRO */}
       </VuiBox>
     </SidenavRoot>
   );
 }
 
-// Setting default values for the props of Sidenav
-Sidenav.defaultProps = {
-  color: "info",
-  // brand: "",
-};
-
 // Typechecking props for the Sidenav
 Sidenav.propTypes = {
   color: PropTypes.oneOf(["primary", "secondary", "info", "success", "warning", "error", "dark"]),
   // brand: PropTypes.string,
-  brandName: PropTypes.string.isRequired,
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 

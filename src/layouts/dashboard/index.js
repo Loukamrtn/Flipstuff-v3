@@ -25,6 +25,7 @@ import { Card, LinearProgress, Stack } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import VuiProgress from "components/VuiProgress";
+import VuiButton from "components/VuiButton";
 
 // Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -42,7 +43,6 @@ import WelcomeMark from "layouts/dashboard/components/WelcomeMark";
 import Projects from "layouts/dashboard/components/Projects";
 import OrderOverview from "layouts/dashboard/components/OrderOverview";
 import SatisfactionRate from "layouts/dashboard/components/SatisfactionRate";
-import ReferralTracking from "layouts/dashboard/components/ReferralTracking";
 
 // React icons
 import { IoIosRocket } from "react-icons/io";
@@ -72,48 +72,35 @@ function Dashboard() {
           <Grid container spacing={3}>
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
-                title={{ text: "today's money", fontWeight: "regular" }}
-                count="$53,000"
-                percentage={{ color: "success", text: "+55%" }}
-                icon={{ color: "info", component: <IoWallet size="22px" color="white" /> }}
+                title={{ text: "Total Profit", fontWeight: "regular" }}
+                count="$32,000"
+                percentage={{ color: "success", text: "This month: $3,200" }}
+                icon={{ color: "info", component: <IoWallet size="22px" color="info" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
-                title={{ text: "today's users" }}
-                count="2,300"
-                percentage={{ color: "success", text: "+3%" }}
-                icon={{ color: "info", component: <IoGlobe size="22px" color="white" /> }}
+                title={{ text: "Total Purchases", fontWeight: "regular" }}
+                count="120"
+                percentage={{ color: "success", text: "This month: 15" }}
+                icon={{ color: "info", component: <IoGlobe size="22px" color="info" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
-                title={{ text: "new clients" }}
-                count="+3,462"
-                percentage={{ color: "error", text: "-2%" }}
-                icon={{ color: "info", component: <IoDocumentText size="22px" color="white" /> }}
+                title={{ text: "Total Sales", fontWeight: "regular" }}
+                count="98"
+                percentage={{ color: "success", text: "This month: 10" }}
+                icon={{ color: "info", component: <IoDocumentText size="22px" color="info" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
-                title={{ text: "total sales" }}
-                count="$103,430"
-                percentage={{ color: "success", text: "+5%" }}
-                icon={{ color: "info", component: <FaShoppingCart size="20px" color="white" /> }}
+                title={{ text: "Items in Stock", fontWeight: "regular" }}
+                count="350"
+                percentage={{ color: "success", text: "" }}
+                icon={{ color: "info", component: <FaShoppingCart size="20px" color="info" /> }}
               />
-            </Grid>
-          </Grid>
-        </VuiBox>
-        <VuiBox mb={3}>
-          <Grid container spacing="18px">
-            <Grid item xs={12} lg={12} xl={5}>
-              <WelcomeMark />
-            </Grid>
-            <Grid item xs={12} lg={6} xl={3}>
-              <SatisfactionRate />
-            </Grid>
-            <Grid item xs={12} lg={6} xl={4}>
-              <ReferralTracking />
             </Grid>
           </Grid>
         </VuiBox>
@@ -187,7 +174,7 @@ function Dashboard() {
                           alignItems="center"
                           sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
                         >
-                          <IoWallet color="#fff" size="12px" />
+                          <IoWallet color="info" size="12px" />
                         </VuiBox>
                         <VuiTypography color="text" variant="button" fontWeight="medium">
                           Users
@@ -211,7 +198,7 @@ function Dashboard() {
                           alignItems="center"
                           sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
                         >
-                          <IoIosRocket color="#fff" size="12px" />
+                          <IoIosRocket color="info" size="12px" />
                         </VuiBox>
                         <VuiTypography color="text" variant="button" fontWeight="medium">
                           Clicks
@@ -235,7 +222,7 @@ function Dashboard() {
                           alignItems="center"
                           sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
                         >
-                          <FaShoppingCart color="#fff" size="12px" />
+                          <FaShoppingCart color="info" size="12px" />
                         </VuiBox>
                         <VuiTypography color="text" variant="button" fontWeight="medium">
                           Sales
@@ -259,7 +246,7 @@ function Dashboard() {
                           alignItems="center"
                           sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
                         >
-                          <IoBuild color="#fff" size="12px" />
+                          <IoBuild color="info" size="12px" />
                         </VuiBox>
                         <VuiTypography color="text" variant="button" fontWeight="medium">
                           Items

@@ -18,6 +18,7 @@
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
+import React from "react";
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -29,8 +30,25 @@ import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import colors from "assets/theme/base/colors";
 
-function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction }) {
+function MiniStatisticsCard({
+  bgColor = "white",
+  title = { fontWeight: "medium", text: "" },
+  count,
+  percentage = { color: "success", text: "" },
+  icon,
+  direction = "right",
+}) {
   const { info } = colors;
+
+  // Correction de la couleur de l'icône si elle n'est pas supportée
+  const safeIcon = {
+    ...icon,
+    color: ["primary","secondary","info","success","warning","error","dark","white"].includes(icon?.color) ? icon.color : "primary"
+  };
+
+  // Sécurisation renforcée
+  const safeTitle = title && typeof title.text === "string" ? title : { text: "", fontWeight: "medium" };
+  const safePercentage = percentage && typeof percentage.text !== "undefined" ? percentage : { color: "success", text: "" };
 
   return (
     <Card sx={{ padding: "17px" }}>
@@ -50,7 +68,7 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
                   alignItems="center"
                   shadow="md"
                 >
-                  {icon.component}
+                  {safeIcon.component}
                 </VuiBox>
               </Grid>
             ) : null}
@@ -61,14 +79,14 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
                   color={bgColor === "white" ? "text" : "white"}
                   opacity={bgColor === "white" ? 1 : 0.7}
                   textTransform="capitalize"
-                  fontWeight={title.fontWeight}
+                  fontWeight={safeTitle.fontWeight}
                 >
-                  {title.text}
+                  {safeTitle.text}
                 </VuiTypography>
                 <VuiTypography variant="subtitle1" fontWeight="bold" color="white">
                   {count}{" "}
-                  <VuiTypography variant="button" color={percentage.color} fontWeight="bold">
-                    {percentage.text}
+                  <VuiTypography variant="button" color={safePercentage.color} fontWeight="bold">
+                    {safePercentage.text}
                   </VuiTypography>
                 </VuiTypography>
               </VuiBox>
@@ -76,7 +94,7 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
             {direction === "right" ? (
               <Grid item xs={4}>
                 <VuiBox
-                  bgColor="#0075FF"
+                  bgColor={info.main}
                   color="white"
                   width="3rem"
                   height="3rem"
@@ -87,9 +105,9 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
                   alignItems="center"
                   shadow="md"
                 >
-                  <Icon fontSize="small" color="inherit">
-                    {icon.component}
-                  </Icon>
+                  <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    {React.cloneElement(safeIcon.component, { color: '#442536', size: '22px' })}
+                  </span>
                 </VuiBox>
               </Grid>
             ) : null}
@@ -99,20 +117,6 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
     </Card>
   );
 }
-
-// Setting default values for the props of MiniStatisticsCard
-MiniStatisticsCard.defaultProps = {
-  bgColor: "white",
-  title: {
-    fontWeight: "medium",
-    text: "",
-  },
-  percentage: {
-    color: "success",
-    text: "",
-  },
-  direction: "right",
-};
 
 // Typechecking props for the MiniStatisticsCard
 MiniStatisticsCard.propTypes = {

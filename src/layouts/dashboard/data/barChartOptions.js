@@ -68,7 +68,7 @@ export const barChartOptionsDashboard = {
     show: false,
   },
   fill: {
-    colors: "#fff",
+    colors: ["#ff4fa3"],
   },
   dataLabels: {
     enabled: false,

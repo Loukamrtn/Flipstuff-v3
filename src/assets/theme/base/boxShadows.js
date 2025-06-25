@@ -67,7 +67,7 @@ export default {
       black.main,
       0.07
     )}`,
-    stateOfNotHover: boxShadow([0, 0], [0, 3.2], info.main, 0.5),
+    stateOfNotHover: boxShadow([0, 0], [0, 3.2], '#ff4fa3', 0.5),
   },
   inputBoxShadow: {
     focus: boxShadow([0, 0], [0, 2], inputColors.boxShadow, 1),

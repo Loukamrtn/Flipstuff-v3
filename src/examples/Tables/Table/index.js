@@ -41,18 +41,20 @@ import typography from "assets/theme/base/typography";
 import borders from "assets/theme/base/borders";
 
 function Table({ columns, rows }) {
-  const { grey } = colors;
+  const { grey, light } = colors;
   const { size, fontWeightBold } = typography;
   const { borderWidth } = borders;
 
-  const renderColumns = columns.map(({ name, align, width }, key) => {
+  const safeColumns = Array.isArray(columns) ? columns : [];
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const renderColumns = safeColumns.map(({ name, align, width }, key) => {
     let pl;
     let pr;
 
     if (key === 0) {
       pl = 3;
       pr = 3;
-    } else if (key === columns.length - 1) {
+    } else if (safeColumns.length > 0 && key === safeColumns.length - 1) {
       pl = 3;
       pr = 3;
     } else {
@@ -76,28 +78,29 @@ function Table({ columns, rows }) {
         opacity={0.7}
         borderBottom={`${borderWidth[1]} solid ${grey[700]}`}
       >
-        {name.toUpperCase()}
+        {typeof name === "string" ? name.toUpperCase() : ""}
       </VuiBox>
     );
   });
 
-  const renderRows = rows.map((row, key) => {
+  const renderRows = safeRows.map((row, key) => {
     const rowKey = `row-${key}`;
 
-    const tableRow = columns.map(({ name, align }) => {
+    const tableRow = safeColumns.map(({ name, align }) => {
       let template;
+      const cellValue = row && name in row ? row[name] : undefined;
 
-      if (Array.isArray(row[name])) {
+      if (Array.isArray(cellValue)) {
         template = (
           <VuiBox
             key={uuidv4()}
             component="td"
             p={1}
-            borderBottom={row.hasBorder ? `${borderWidth[1]} solid ${light.main}` : null}
+            borderBottom={row && row.hasBorder ? `${borderWidth[1]} solid ${light.main}` : null}
           >
             <VuiBox display="flex" alignItems="center" py={0.5} px={1}>
               <VuiBox mr={2}>
-                <VuiAvatar src={row[name][0]} name={row[name][1]} variant="rounded" size="sm" />
+                <VuiAvatar src={cellValue[0]} name={cellValue[1]} variant="rounded" size="sm" />
               </VuiBox>
               <VuiTypography
                 color="white"
@@ -105,7 +108,7 @@ function Table({ columns, rows }) {
                 fontWeight="medium"
                 sx={{ width: "max-content" }}
               >
-                {row[name][1]}
+                {cellValue[1]}
               </VuiTypography>
             </VuiBox>
           </VuiBox>
@@ -117,7 +120,7 @@ function Table({ columns, rows }) {
             component="td"
             p={1}
             textAlign={align}
-            borderBottom={row.hasBorder ? `${borderWidth[1]} solid ${grey[700]}` : null}
+            borderBottom={row && row.hasBorder ? `${borderWidth[1]} solid ${grey[700]}` : null}
           >
             <VuiTypography
               variant="button"
@@ -125,7 +128,7 @@ function Table({ columns, rows }) {
               color="text"
               sx={{ display: "inline-block", width: "max-content" }}
             >
-              {row[name]}
+              {cellValue !== undefined && cellValue !== null ? cellValue : ""}
             </VuiTypography>
           </VuiBox>
         );

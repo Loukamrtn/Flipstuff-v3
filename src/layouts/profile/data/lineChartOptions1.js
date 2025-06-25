@@ -92,7 +92,7 @@ export const lineChartOptionsProfile1 = {
       opacityTo: 0,
       stops: [],
     },
-    colors: ["#01B574"],
+    colors: ["#e7125d"],
   },
-  colors: ["#01B574"],
+  colors: ["#e7125d"],
 };

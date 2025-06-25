@@ -63,8 +63,9 @@ function ProfileInfoCard({ title, description, info, social }) {
     </VuiBox>
   ));
 
-  // Render the card social media icons
-  const renderSocial = social.map(({ link, icon, color }) => (
+  // Sécurisation de la prop social
+  const safeSocial = Array.isArray(social) ? social : [];
+  const renderSocial = safeSocial.map(({ link, icon, color }) => (
     <VuiBox
       key={color}
       component="a"

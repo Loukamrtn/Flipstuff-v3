@@ -40,16 +40,19 @@ import {
 // Vision UI Dashboard React context
 import { useVisionUIController } from "context";
 
-function SidenavCollapse({ color, icon, name, children, active, noCollapse, open, ...rest }) {
+function SidenavCollapse({ color = "info", icon, name, children, active, noCollapse, open, ...rest }) {
   const [controller] = useVisionUIController();
   const { miniSidenav, transparentSidenav } = controller;
+
+  // Détermination de la couleur de l'icône
+  const iconColor = active ? "info" : "white";
 
   return (
     <>
       <ListItem component="li">
         <VuiBox {...rest} sx={(theme) => collapseItem(theme, { active, transparentSidenav })}>
           <ListItemIcon
-            sx={(theme) => collapseIconBox(theme, { active, transparentSidenav, color })}
+            sx={(theme) => collapseIconBox(theme, { active, transparentSidenav, color: iconColor })}
           >
             {typeof icon === "string" ? (
               <Icon sx={(theme) => collapseIcon(theme, { active })}>{icon}</Icon>
@@ -72,15 +75,6 @@ function SidenavCollapse({ color, icon, name, children, active, noCollapse, open
     </>
   );
 }
-
-// Setting default values for the props of SidenavCollapse
-SidenavCollapse.defaultProps = {
-  color: "info",
-  active: false,
-  noCollapse: false,
-  children: false,
-  open: false,
-};
 
 // Typechecking props for the SidenavCollapse
 SidenavCollapse.propTypes = {

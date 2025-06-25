@@ -56,58 +56,37 @@ function collapseItem(theme, ownerState) {
 
 function collapseIconBox(theme, ownerState) {
   const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
-  const { active, color } = ownerState;
+  const { active } = ownerState;
 
-  const { white, info, gradients, transparent, sidenav } = palette;
-  const { md } = boxShadows;
+  const { white, accentGlow, gradients, transparent, sidenav } = palette;
   const { borderRadius } = borders;
   const { pxToRem } = functions;
 
   return {
-    background: (active) => {
-      if (active) {
-        return color === "default" ? white.button : sidenav.button;
-      }
-      return sidenav.button;
-    },
+    background: sidenav.button,
     minWidth: pxToRem(32),
     minHeight: pxToRem(32),
     borderRadius: borderRadius.button,
     display: "grid",
     placeItems: "center",
-    boxShadow: md,
+    boxShadow: active ? `0 0 0 2px ${accentGlow.main}` : `0 0 0 1.5px ${white.main}`,
     transition: transitions.create("margin", {
       easing: transitions.easing.easeInOut,
       duration: transitions.duration.standard,
     }),
-
     [breakpoints.up("xl")]: {
-      background: () => {
-        let background;
-
-        if (!active) {
-          background = sidenav.button;
-        } else if (color === "default") {
-          background = info.main;
-        } else if (color === "warning") {
-          background = gradients.warning.main;
-        } else {
-          background = palette[color].main;
-        }
-
-        return background;
-      },
+      background: sidenav.button,
     },
-
-    backgroundColor: active ? palette[color].main : transparent.main,
+    backgroundColor: sidenav.button,
     "& svg, svg g": {
-      fill: active ? white.main : palette[color].main,
+      fill: active ? accentGlow.main : white.main,
+      transition: "fill 0.2s",
     },
   };
 }
 
-const collapseIcon = ({ palette: { white, gradients } }, { active }) => ({
-  color: active ? white.main : gradients.dark.state,
+const collapseIcon = ({ palette: { accentGlow, white } }, { active }) => ({
+  color: active ? accentGlow.main : white.main,
 });
 
 function collapseText(theme, ownerState) {

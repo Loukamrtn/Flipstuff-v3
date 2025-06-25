@@ -28,14 +28,23 @@ export default {
   styleOverrides: {
     fontSizeInherit: {
       fontSize: "inherit !important",
+      color: "#ff4fa3",
+      transition: "color 0.2s",
     },
 
     fontSizeSmall: {
       fontSize: `${pxToRem(20)} !important`,
+      color: "#ff4fa3",
     },
 
     fontSizeLarge: {
       fontSize: `${pxToRem(36)} !important`,
+      color: "#ff4fa3",
+    },
+
+    "&:hover": {
+      color: "#fff",
+      textShadow: "0 0 8px #ff4fa3",
     },
   },
 };
