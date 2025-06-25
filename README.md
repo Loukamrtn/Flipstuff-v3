@@ -28,7 +28,7 @@ Des instructions d’installation pour une version locale seront ajoutées dans 
 
 ## 👥 Auteurs
 
-Projet développé par KARU.
+Projet développé par **KARU**.
 
 ## 📄 Licence
 

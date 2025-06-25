@@ -56,6 +56,9 @@ import { BsCreditCardFill } from "react-icons/bs";
 import { IoStatsChart } from "react-icons/io5";
 import { IoHome } from "react-icons/io5";
 
+import { useAuth } from "context/AuthContext";
+import { Redirect, Route } from "react-router-dom";
+
 const routes = [
   {
     type: "collapse",
@@ -123,4 +126,33 @@ const routes = [
   },
 ];
 
+// Route protégée
+function PrivateRoute({ component: Component, ...rest }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        user ? <Component {...props} /> : <Redirect to="/sign-in" />
+      }
+    />
+  );
+}
+
+// Route publique (accessible seulement si pas connecté)
+function PublicRoute({ component: Component, ...rest }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        !user ? <Component {...props} /> : <Redirect to="/dashboard" />
+      }
+    />
+  );
+}
+
 export default routes;
+export { PrivateRoute, PublicRoute };

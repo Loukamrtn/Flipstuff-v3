@@ -47,6 +47,13 @@ import routes from "routes";
 
 // Vision UI Dashboard React contexts
 import { useVisionUIController, setMiniSidenav, setOpenConfigurator } from "context";
+import { AuthProvider } from "context/AuthContext";
+import SignIn from "layouts/authentication/sign-in";
+import SignUp from "layouts/authentication/sign-up";
+import Dashboard from "layouts/dashboard";
+import Tables from "layouts/tables";
+import Profile from "layouts/profile";
+import { PrivateRoute, PublicRoute } from "./ProtectedRoutes";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -108,26 +115,34 @@ export default function App() {
   // );
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {layout === "dashboard" && (
-        <>
-          <Sidenav
-            color={sidenavColor}
-            brand=""
-            // brandName="VISION UI FREE"
-            routes={routes}
-            onMouseEnter={handleOnMouseEnter}
-            onMouseLeave={handleOnMouseLeave}
-          />
-          {/* Suppression de <Configurator /> et du bouton de config */}
-        </>
-      )}
-      {/* Suppression du layout VR et du configurator */}
-      <Switch>
-        {getRoutes(routes)}
-        <Redirect from="*" to="/dashboard" />
-      </Switch>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {layout === "dashboard" &&
+          pathname !== "/authentication/sign-in" &&
+          pathname !== "/authentication/sign-up" && (
+            <>
+              <Sidenav
+                color={sidenavColor}
+                brand=""
+                // brandName="VISION UI FREE"
+                routes={routes}
+                onMouseEnter={handleOnMouseEnter}
+                onMouseLeave={handleOnMouseLeave}
+              />
+              {/* Suppression de <Configurator /> et du bouton de config */}
+            </>
+        )}
+        {/* Suppression du layout VR et du configurator */}
+        <Switch>
+          <PublicRoute path="/authentication/sign-in" component={SignIn} />
+          <PublicRoute path="/authentication/sign-up" component={SignUp} />
+          <PrivateRoute path="/dashboard" component={Dashboard} />
+          <PrivateRoute path="/tables" component={Tables} />
+          <PrivateRoute path="/profile" component={Profile} />
+          <Redirect from="*" to="/dashboard" />
+        </Switch>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

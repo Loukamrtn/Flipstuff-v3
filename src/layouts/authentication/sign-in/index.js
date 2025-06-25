@@ -17,122 +17,139 @@
 */
 
 import { useState } from "react";
-
-// react-router-dom components
+import { supabase } from '../../../supabaseClient';
 import { Link } from "react-router-dom";
 
-// Vision UI Dashboard React components
-import VuiBox from "components/VuiBox";
-import VuiTypography from "components/VuiTypography";
-import VuiInput from "components/VuiInput";
-import VuiButton from "components/VuiButton";
-import VuiSwitch from "components/VuiSwitch";
-import GradientBorder from "examples/GradientBorder";
+export default function SignIn() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-// Vision UI Dashboard assets
-import radialGradient from "assets/theme/functions/radialGradient";
-import palette from "assets/theme/base/colors";
-import borders from "assets/theme/base/borders";
-
-// Authentication layout components
-import CoverLayout from "layouts/authentication/components/CoverLayout";
-
-// Images
-import bgSignIn from "assets/images/signInImage.png";
-
-function SignIn() {
-  const [rememberMe, setRememberMe] = useState(true);
-
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      window.location.href = '/dashboard';
+    }
+  };
 
   return (
-    <CoverLayout
-      title="Nice to see you!"
-      color="white"
-      description="Enter your email and password to sign in"
-      premotto="INSPIRED BY THE FUTURE:"
-      motto="THE VISION UI DASHBOARD"
-      image={bgSignIn}
-    >
-      <VuiBox component="form" role="form">
-        <VuiBox mb={2}>
-          <VuiBox mb={1} ml={0.5}>
-            <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
-              Email
-            </VuiTypography>
-          </VuiBox>
-          <GradientBorder
-            minWidth="100%"
-            padding="1px"
-            borderRadius={borders.borderRadius.lg}
-            backgroundImage={radialGradient(
-              palette.gradients.borderLight.main,
-              palette.gradients.borderLight.state,
-              palette.gradients.borderLight.angle
-            )}
-          >
-            <VuiInput type="email" placeholder="Your email..." fontWeight="500" />
-          </GradientBorder>
-        </VuiBox>
-        <VuiBox mb={2}>
-          <VuiBox mb={1} ml={0.5}>
-            <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
-              Password
-            </VuiTypography>
-          </VuiBox>
-          <GradientBorder
-            minWidth="100%"
-            borderRadius={borders.borderRadius.lg}
-            padding="1px"
-            backgroundImage={radialGradient(
-              palette.gradients.borderLight.main,
-              palette.gradients.borderLight.state,
-              palette.gradients.borderLight.angle
-            )}
-          >
-            <VuiInput
-              type="password"
-              placeholder="Your password..."
-              sx={({ typography: { size } }) => ({
-                fontSize: size.sm,
-              })}
-            />
-          </GradientBorder>
-        </VuiBox>
-        <VuiBox display="flex" alignItems="center">
-          <VuiSwitch color="info" checked={rememberMe} onChange={handleSetRememberMe} />
-          <VuiTypography
-            variant="caption"
-            color="white"
-            fontWeight="medium"
-            onClick={handleSetRememberMe}
-            sx={{ cursor: "pointer", userSelect: "none" }}
-          >
-            &nbsp;&nbsp;&nbsp;&nbsp;Remember me
-          </VuiTypography>
-        </VuiBox>
-        <VuiBox mt={4} mb={1}>
-          <VuiButton color="info" fullWidth>
-            SIGN IN
-          </VuiButton>
-        </VuiBox>
-        <VuiBox mt={3} textAlign="center">
-          <VuiTypography variant="button" color="text" fontWeight="regular">
-            Don&apos;t have an account?{" "}
-            <VuiTypography
-              component={Link}
-              to="/authentication/sign-up"
-              variant="button"
-              color="white"
-              fontWeight="medium"
-            >
-              Sign up
-            </VuiTypography>
-          </VuiTypography>
-        </VuiBox>
-      </VuiBox>
-    </CoverLayout>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(120deg, #23141c 60%, #442536 100%)',
+    }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          background: 'rgba(44, 20, 34, 0.85)',
+          borderRadius: 18,
+          boxShadow: '0 8px 32px 0 #ff4fa340',
+          padding: '2.5rem 2rem',
+          minWidth: 340,
+          maxWidth: 380,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          border: '1.5px solid #ff4fa3',
+        }}
+      >
+        <h1 style={{
+          color: '#ff4fa3',
+          fontWeight: 900,
+          fontSize: '2.1rem',
+          marginBottom: 8,
+          letterSpacing: '0.04em',
+        }}>Connexion</h1>
+        <p style={{ color: '#ffd3ea', marginBottom: 28, fontSize: '1.08rem', textAlign: 'center' }}>
+          Connecte-toi à Flipstuff pour accéder à ton dashboard sneakers !
+        </p>
+        <input
+          type="email"
+          placeholder="Adresse email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <input
+          type="password"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            padding: '13px 0',
+            fontWeight: 'bold',
+            fontSize: '1.08rem',
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px #ff4fa340',
+            marginBottom: 10,
+            transition: 'background 0.2s, box-shadow 0.2s',
+          }}
+        >
+          {loading ? 'Connexion...' : 'Se connecter'}
+        </button>
+        {error && <div style={{ color: '#e7125d', marginTop: 8, fontWeight: 500, textAlign: 'center' }}>{error}</div>}
+        <div style={{ marginTop: 24, color: '#fff', fontSize: '0.98rem' }}>
+          Pas encore de compte ?{' '}
+          <Link to="/authentication/sign-up" style={{ color: '#ff4fa3', fontWeight: 600, textDecoration: 'none' }}>Créer un compte</Link>
+        </div>
+      </form>
+    </div>
   );
 }
-
-export default SignIn;

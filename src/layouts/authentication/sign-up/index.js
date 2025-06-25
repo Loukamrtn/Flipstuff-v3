@@ -17,278 +17,201 @@
 */
 
 import { useState } from "react";
+import { supabase } from '../../../supabaseClient';
 
-// react-router-dom components
-import { Link } from "react-router-dom";
+export default function SignUp() {
+  const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-// @mui material components
-import Icon from "@mui/material/Icon";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-
-// Icons
-import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
-
-// Vision UI Dashboard React components
-import VuiBox from "components/VuiBox";
-import VuiTypography from "components/VuiTypography";
-import VuiInput from "components/VuiInput";
-import VuiButton from "components/VuiButton";
-import VuiSwitch from "components/VuiSwitch";
-import GradientBorder from "examples/GradientBorder";
-
-// Vision UI Dashboard assets
-import radialGradient from "assets/theme/functions/radialGradient";
-import rgba from "assets/theme/functions/rgba";
-import palette from "assets/theme/base/colors";
-import borders from "assets/theme/base/borders";
-
-// Authentication layout components
-import CoverLayout from "layouts/authentication/components/CoverLayout";
-
-// Images
-import bgSignIn from "assets/images/signUpImage.png";
-
-function SignIn() {
-  const [rememberMe, setRememberMe] = useState(true);
-
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    if (password !== password2) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { displayName } }
+    });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess('Vérifie tes mails pour confirmer ton compte !');
+    }
+  };
 
   return (
-    <CoverLayout
-      title="Welcome!"
-      color="white"
-      description="Use these awesome forms to login or create new account in your project for free."
-      image={bgSignIn}
-      premotto="INSPIRED BY THE FUTURE:"
-      motto="THE VISION UI DASHBOARD"
-      cardContent
-    >
-      <GradientBorder borderRadius={borders.borderRadius.form} minWidth="100%" maxWidth="100%">
-        <VuiBox
-          component="form"
-          role="form"
-          borderRadius="inherit"
-          p="45px"
-          sx={({ palette: { secondary } }) => ({
-            backgroundColor: secondary.focus,
-          })}
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(120deg, #23141c 60%, #442536 100%)',
+    }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          background: 'rgba(44, 20, 34, 0.85)',
+          borderRadius: 18,
+          boxShadow: '0 8px 32px 0 #ff4fa340',
+          padding: '2.5rem 2rem',
+          minWidth: 340,
+          maxWidth: 380,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          border: '1.5px solid #ff4fa3',
+        }}
+      >
+        <h1 style={{
+          color: '#ff4fa3',
+          fontWeight: 900,
+          fontSize: '2.1rem',
+          marginBottom: 8,
+          letterSpacing: '0.04em',
+        }}>Créer un compte</h1>
+        <p style={{ color: '#ffd3ea', marginBottom: 28, fontSize: '1.08rem', textAlign: 'center' }}>
+          Rejoins Flipstuff pour gérer tes stocks et ventes de sneakers !
+        </p>
+        <input
+          type="text"
+          placeholder="Nom d'utilisateur"
+          value={displayName}
+          onChange={e => setDisplayName(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <input
+          type="email"
+          placeholder="Adresse email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <input
+          type="password"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <input
+          type="password"
+          placeholder="Répéter le mot de passe"
+          value={password2}
+          onChange={e => setPassword2(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 14,
+            border: '1.5px solid #ff4fa3',
+            marginBottom: 18,
+            background: 'rgba(255,255,255,0.10)',
+            color: '#fff',
+            fontSize: '1.07rem',
+            outline: 'none',
+            boxShadow: '0 2px 16px 0 #e7125d22',
+            backdropFilter: 'blur(6px)',
+            transition: 'border 0.2s, box-shadow 0.2s, background 0.2s',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
+          onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            padding: '13px 0',
+            fontWeight: 'bold',
+            fontSize: '1.08rem',
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+            boxShadow: '0 2px 12px #ff4fa340',
+            marginBottom: 10,
+            transition: 'background 0.2s, box-shadow 0.2s',
+          }}
         >
-          <VuiTypography
-            color="white"
-            fontWeight="bold"
-            textAlign="center"
-            mb="24px"
-            sx={({ typography: { size } }) => ({
-              fontSize: size.lg,
-            })}
-          >
-            Register with
-          </VuiTypography>
-          <Stack mb="25px" justifyContent="center" alignItems="center" direction="row" spacing={2}>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaFacebook}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaApple}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaGoogle}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
-          </Stack>
-          <VuiTypography
-            color="text"
-            fontWeight="bold"
-            textAlign="center"
-            mb="14px"
-            sx={({ typography: { size } }) => ({ fontSize: size.lg })}
-          >
-            or
-          </VuiTypography>
-          <VuiBox mb={2}>
-            <VuiBox mb={1} ml={0.5}>
-              <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
-                Name
-              </VuiTypography>
-            </VuiBox>
-            <GradientBorder
-              minWidth="100%"
-              borderRadius={borders.borderRadius.lg}
-              padding="1px"
-              backgroundImage={radialGradient(
-                palette.gradients.borderLight.main,
-                palette.gradients.borderLight.state,
-                palette.gradients.borderLight.angle
-              )}
-            >
-              <VuiInput
-                placeholder="Your full name..."
-                sx={({ typography: { size } }) => ({
-                  fontSize: size.sm,
-                })}
-              />
-            </GradientBorder>
-          </VuiBox>
-          <VuiBox mb={2}>
-            <VuiBox mb={1} ml={0.5}>
-              <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
-                Email
-              </VuiTypography>
-            </VuiBox>
-            <GradientBorder
-              minWidth="100%"
-              borderRadius={borders.borderRadius.lg}
-              padding="1px"
-              backgroundImage={radialGradient(
-                palette.gradients.borderLight.main,
-                palette.gradients.borderLight.state,
-                palette.gradients.borderLight.angle
-              )}
-            >
-              <VuiInput
-                type="email"
-                placeholder="Your email..."
-                sx={({ typography: { size } }) => ({
-                  fontSize: size.sm,
-                })}
-              />
-            </GradientBorder>
-          </VuiBox>
-          <VuiBox mb={2}>
-            <VuiBox mb={1} ml={0.5}>
-              <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
-                Password
-              </VuiTypography>
-            </VuiBox>
-            <GradientBorder
-              minWidth="100%"
-              borderRadius={borders.borderRadius.lg}
-              padding="1px"
-              backgroundImage={radialGradient(
-                palette.gradients.borderLight.main,
-                palette.gradients.borderLight.state,
-                palette.gradients.borderLight.angle
-              )}
-            >
-              <VuiInput
-                type="password"
-                placeholder="Your password..."
-                sx={({ typography: { size } }) => ({
-                  fontSize: size.sm,
-                })}
-              />
-            </GradientBorder>
-          </VuiBox>
-          <VuiBox display="flex" alignItems="center">
-            <VuiSwitch color="info" checked={rememberMe} onChange={handleSetRememberMe} />
-            <VuiTypography
-              variant="caption"
-              color="white"
-              fontWeight="medium"
-              onClick={handleSetRememberMe}
-              sx={{ cursor: "pointer", userSelect: "none" }}
-            >
-              &nbsp;&nbsp;&nbsp;&nbsp;Remember me
-            </VuiTypography>
-          </VuiBox>
-          <VuiBox mt={4} mb={1}>
-            <VuiButton color="info" fullWidth>
-              SIGN UP
-            </VuiButton>
-          </VuiBox>
-          <VuiBox mt={3} textAlign="center">
-            <VuiTypography variant="button" color="text" fontWeight="regular">
-              Already have an account?{" "}
-              <VuiTypography
-                component={Link}
-                to="/authentication/sign-in"
-                variant="button"
-                color="white"
-                fontWeight="medium"
-              >
-                Sign in
-              </VuiTypography>
-            </VuiTypography>
-          </VuiBox>
-        </VuiBox>
-      </GradientBorder>
-    </CoverLayout>
+          {loading ? 'Inscription...' : "S'inscrire"}
+        </button>
+        {error && <div style={{ color: '#e7125d', marginTop: 8, fontWeight: 500, textAlign: 'center' }}>{error}</div>}
+        {success && <div style={{ color: '#01b574', marginTop: 8, fontWeight: 500, textAlign: 'center' }}>{success}</div>}
+        <div style={{ marginTop: 24, color: '#fff', fontSize: '0.98rem' }}>
+          Déjà un compte ?{' '}
+          <a href="/authentication/sign-in" style={{ color: '#ff4fa3', fontWeight: 600, textDecoration: 'none' }}>Se connecter</a>
+        </div>
+      </form>
+    </div>
   );
 }
-
-export default SignIn;
