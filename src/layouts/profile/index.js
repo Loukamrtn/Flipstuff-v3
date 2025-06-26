@@ -39,179 +39,400 @@ import DefaultProjectCard from "examples/Cards/ProjectCards/DefaultProjectCard";
 import Footer from "examples/Footer";
 // Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 // Overview page components
 import Header from "layouts/profile/components/Header";
 import PlatformSettings from "layouts/profile/components/PlatformSettings";
 import Welcome from "../profile/components/Welcome/index";
 import CarInformations from "./components/CarInformations";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../supabaseClient";
+import { useState } from "react";
+import { Avatar, Button, Typography, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, IconButton, InputAdornment, Divider } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-function Overview() {
+const providerLabel = {
+  google: "Google",
+  discord: "Discord",
+  email: "Email"
+};
+
+export default function Profile() {
+  const { user, loading } = useAuth();
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [form, setForm] = useState({
+    displayName: user?.user_metadata?.displayName || user?.user_metadata?.full_name || "",
+    email: user?.email || "",
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    password: "",
+    password2: ""
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+  const [passwordFeedback, setPasswordFeedback] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  if (loading) {
+    return <VuiBox display="flex" justifyContent="center" alignItems="center" minHeight="60vh"><CircularProgress /></VuiBox>;
+  }
+
+  if (!user) {
+    return (
+      <VuiBox display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="60vh">
+        <VuiTypography variant="h4" color="white" mb={2}>Non connecté</VuiTypography>
+        <Button variant="contained" color="primary" href="/authentication/sign-in">Se connecter</Button>
+      </VuiBox>
+    );
+  }
+
+  const avatarUrl = user.user_metadata?.avatar_url ||
+    (user.email ? `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(form.displayName || user.email)}` : undefined);
+  const displayName = user.user_metadata?.displayName || user.user_metadata?.full_name || user.email;
+  const provider = user.app_metadata?.provider || (user.identities && user.identities[0]?.provider) || "email";
+  const createdAt = user.created_at && !isNaN(new Date(user.created_at)) ? new Date(user.created_at) : null;
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    await supabase.auth.signOut();
+    window.location.href = "/authentication/sign-in";
+  };
+
+  const handleFormChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordFormChange = (e) => {
+    setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setFeedback(null);
+    try {
+      if (form.displayName && form.displayName !== (user.user_metadata?.displayName || user.user_metadata?.full_name)) {
+        const { error } = await supabase.auth.updateUser({ data: { displayName: form.displayName } });
+        if (error) throw error;
+      }
+      if (form.email && form.email !== user.email) {
+        const { error } = await supabase.auth.updateUser({ email: form.email });
+        if (error) throw error;
+      }
+      setFeedback({ type: "success", msg: "Profil mis à jour !" });
+    } catch (e) {
+      setFeedback({ type: "error", msg: e.message });
+    }
+    setSaving(false);
+  };
+
+  const handleSavePassword = async (e) => {
+    e.preventDefault();
+    setSavingPassword(true);
+    setPasswordFeedback(null);
+    try {
+      if (!passwordForm.password) throw new Error("Le mot de passe ne peut pas être vide.");
+      if (passwordForm.password !== passwordForm.password2) throw new Error("Les mots de passe ne correspondent pas.");
+      if (passwordForm.password.length < 6) throw new Error("Le mot de passe doit faire au moins 6 caractères.");
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.password });
+      if (error) throw error;
+      setPasswordFeedback({ type: "success", msg: "Mot de passe modifié !" });
+      setPasswordForm({ password: '', password2: '' });
+    } catch (e) {
+      setPasswordFeedback({ type: "error", msg: e.message });
+    }
+    setSavingPassword(false);
+  };
+
   return (
     <DashboardLayout>
-      <Header />
-      <VuiBox mt={5} mb={3}>
-        <Grid
-          container
-          spacing={3}
-          sx={({ breakpoints }) => ({
-            [breakpoints.only("xl")]: {
-              gridTemplateColumns: "repeat(2, 1fr)",
-            },
-          })}
-        >
-          <Grid
-            item
-            xs={12}
-            xl={4}
-            xxl={3}
-            sx={({ breakpoints }) => ({
-              minHeight: "400px",
-              [breakpoints.only("xl")]: {
-                gridArea: "1 / 1 / 2 / 2",
-              },
-            })}
-          >
-            <Welcome />
+      <DashboardNavbar />
+      <VuiBox py={3}>
+        <Grid container spacing={4} justifyContent="center">
+          {/* Section Profil Utilisateur */}
+          <Grid item xs={12} md={5}>
+            <Card sx={{
+              p: 4,
+              borderRadius: 5,
+              boxShadow: '0 4px 32px 0 #0000001a',
+              bgcolor: 'background.card',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}>
+              <Avatar src={avatarUrl} alt={displayName} sx={{ width: 100, height: 100, mb: 2, bgcolor: '#ff4fa3', color: '#fff', fontSize: 40, border: '4px solid #ff4fa3' }} />
+              <VuiTypography variant="h4" color="white" fontWeight="bold" mb={1} sx={{ letterSpacing: '0.01em' }}>{displayName}</VuiTypography>
+              <VuiTypography variant="button" color="text" mb={1}>{user.email}</VuiTypography>
+              <Divider sx={{ width: '100%', my: 2, bgcolor: '#ff4fa355' }} />
+              <VuiTypography variant="button" color="text">ID utilisateur : <b>{user.id}</b></VuiTypography>
+              <VuiTypography variant="button" color="text">Provider : <b>{providerLabel[provider] || provider}</b></VuiTypography>
+              {createdAt && (
+                <VuiTypography variant="button" color="text">Inscrit le : {createdAt.toLocaleDateString()}</VuiTypography>
+              )}
+            </Card>
+            {/* Section Sécurité */}
+            <Card sx={{
+              p: 3,
+              borderRadius: 5,
+              boxShadow: '0 4px 32px 0 #0000001a',
+              bgcolor: 'background.card',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mt: 3
+            }}>
+              <VuiTypography variant="h6" color="white" fontWeight="bold" mb={1}>Sécurité</VuiTypography>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                sx={{
+                  background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.2,
+                  mt: 1,
+                  boxShadow: 'none',
+                  letterSpacing: '0.04em',
+                  fontSize: '1.08rem',
+                  '&:hover': {
+                    background: 'linear-gradient(90deg, #e7125d 0%, #ff4fa3 100%)',
+                  },
+                }}
+              >
+                {logoutLoading ? <CircularProgress size={22} color="inherit" /> : 'Se déconnecter'}
+              </Button>
+            </Card>
           </Grid>
-          <Grid
-            item
-            xs={12}
-            xl={5}
-            xxl={6}
-            sx={({ breakpoints }) => ({
-              [breakpoints.only("xl")]: {
-                gridArea: "2 / 1 / 3 / 3",
-              },
-            })}
-          >
-            <CarInformations />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            xl={3}
-            xxl={3}
-            sx={({ breakpoints }) => ({
-              [breakpoints.only("xl")]: {
-                gridArea: "1 / 2 / 2 / 3",
-              },
-            })}
-          >
-            <ProfileInfoCard
-              title="profile information"
-              description="Hi, I’m Mark Johnson, Decisions: If you can’t decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
-              info={{
-                fullName: "Mark Johnson",
-                mobile: "(44) 123 1234 123",
-                email: "mark@simmmple.com",
-                location: "United States",
-              }}
-              social={[
-                {
-                  link: "https://www.facebook.com/CreativeTim/",
-                  icon: <FacebookIcon />,
-                  color: "facebook",
-                },
-                {
-                  link: "https://twitter.com/creativetim",
-                  icon: <TwitterIcon />,
-                  color: "twitter",
-                },
-                {
-                  link: "https://www.instagram.com/creativetimofficial/",
-                  icon: <InstagramIcon />,
-                  color: "instagram",
-                },
-              ]}
-            />
+          {/* Section Modification Profil */}
+          <Grid item xs={12} md={7}>
+            <Card sx={{
+              p: 4,
+              borderRadius: 5,
+              boxShadow: '0 4px 32px 0 #0000001a',
+              bgcolor: 'background.card',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+              mb: 3
+            }}>
+              <VuiTypography variant="h5" color="white" fontWeight="bold" mb={2}>
+                Modifier le profil
+              </VuiTypography>
+              <form onSubmit={handleSave} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'center' }}>
+                {feedback && <Alert severity={feedback.type} sx={{ width: '100%' }}>{feedback.msg}</Alert>}
+                <TextField
+                  label="Pseudo"
+                  name="displayName"
+                  value={form.displayName}
+                  onChange={handleFormChange}
+                  fullWidth
+                  autoFocus
+                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
+                  placeholder="Pseudo"
+                  sx={{
+                    mb: 1,
+                    '& .MuiOutlinedInput-root': {
+                      background: '#2a1833',
+                      borderRadius: 3,
+                      '& input': {
+                        background: 'transparent',
+                        color: '#fff',
+                        padding: '14px 16px',
+                        fontWeight: 500,
+                        fontSize: '1.08rem',
+                      },
+                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      '&:hover fieldset': { borderColor: '#fff' },
+                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
+                    },
+                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
+                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
+                  }}
+                />
+                <TextField
+                  label="Email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleFormChange}
+                  fullWidth
+                  type="email"
+                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
+                  placeholder="Email"
+                  sx={{
+                    mb: 1,
+                    '& .MuiOutlinedInput-root': {
+                      background: '#2a1833',
+                      borderRadius: 3,
+                      '& input': {
+                        background: 'transparent',
+                        color: '#fff',
+                        padding: '14px 16px',
+                        fontWeight: 500,
+                        fontSize: '1.08rem',
+                      },
+                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      '&:hover fieldset': { borderColor: '#fff' },
+                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
+                    },
+                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
+                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={saving}
+                  sx={{
+                    background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    px: 4,
+                    py: 1.2,
+                    mt: 2,
+                    boxShadow: 'none',
+                    letterSpacing: '0.04em',
+                    fontSize: '1.08rem',
+                    '&:hover': {
+                      background: 'linear-gradient(90deg, #e7125d 0%, #ff4fa3 100%)',
+                    },
+                  }}
+                >
+                  {saving ? <CircularProgress size={20} color="inherit" /> : 'Enregistrer'}
+                </Button>
+              </form>
+            </Card>
+            {/* Section Modification Mot de Passe */}
+            <Card sx={{
+              p: 4,
+              borderRadius: 5,
+              boxShadow: '0 4px 32px 0 #0000001a',
+              bgcolor: 'background.card',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}>
+              <VuiTypography variant="h5" color="white" fontWeight="bold" mb={2}>
+                Modifier le mot de passe
+              </VuiTypography>
+              <form onSubmit={handleSavePassword} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'center' }}>
+                {passwordFeedback && <Alert severity={passwordFeedback.type} sx={{ width: '100%' }}>{passwordFeedback.msg}</Alert>}
+                <TextField
+                  label="Nouveau mot de passe"
+                  name="password"
+                  value={passwordForm.password}
+                  onChange={handlePasswordFormChange}
+                  type={showPassword ? "text" : "password"}
+                  fullWidth
+                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
+                  placeholder="Nouveau mot de passe"
+                  sx={{
+                    mb: 1,
+                    '& .MuiOutlinedInput-root': {
+                      background: '#2a1833',
+                      borderRadius: 3,
+                      '& input': {
+                        background: 'transparent',
+                        color: '#fff',
+                        padding: '14px 16px',
+                        fontWeight: 500,
+                        fontSize: '1.08rem',
+                      },
+                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      '&:hover fieldset': { borderColor: '#fff' },
+                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
+                    },
+                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
+                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowPassword(v => !v)} edge="end" size="small" sx={{ color: '#ff4fa3' }}>
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                <TextField
+                  label="Confirmer le mot de passe"
+                  name="password2"
+                  value={passwordForm.password2}
+                  onChange={handlePasswordFormChange}
+                  type={showPassword2 ? "text" : "password"}
+                  fullWidth
+                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
+                  placeholder="Confirmer le mot de passe"
+                  sx={{
+                    mb: 1,
+                    '& .MuiOutlinedInput-root': {
+                      background: '#2a1833',
+                      borderRadius: 3,
+                      '& input': {
+                        background: 'transparent',
+                        color: '#fff',
+                        padding: '14px 16px',
+                        fontWeight: 500,
+                        fontSize: '1.08rem',
+                      },
+                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      '&:hover fieldset': { borderColor: '#fff' },
+                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
+                    },
+                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
+                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowPassword2(v => !v)} edge="end" size="small" sx={{ color: '#ff4fa3' }}>
+                          {showPassword2 ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={savingPassword}
+                  sx={{
+                    background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    px: 4,
+                    py: 1.2,
+                    mt: 2,
+                    boxShadow: 'none',
+                    letterSpacing: '0.04em',
+                    fontSize: '1.08rem',
+                    '&:hover': {
+                      background: 'linear-gradient(90deg, #e7125d 0%, #ff4fa3 100%)',
+                    },
+                  }}
+                >
+                  {savingPassword ? <CircularProgress size={20} color="inherit" /> : 'Changer le mot de passe'}
+                </Button>
+              </form>
+            </Card>
           </Grid>
         </Grid>
       </VuiBox>
-      <Grid container spacing={3} mb="30px">
-        <Grid item xs={12} xl={3} height="100%">
-          <PlatformSettings />
-        </Grid>
-        <Grid item xs={12} xl={9}>
-          <Card>
-            <VuiBox display="flex" flexDirection="column" height="100%">
-              <VuiBox display="flex" flexDirection="column" mb="24px">
-                <VuiTypography color="white" variant="lg" fontWeight="bold" mb="6px">
-                  Projects
-                </VuiTypography>
-                <VuiTypography color="text" variant="button" fontWeight="regular">
-                  Architects design houses
-                </VuiTypography>
-              </VuiBox>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6} xl={4}>
-                  <DefaultProjectCard
-                    image={profile1}
-                    label="project #2"
-                    title="modern"
-                    description="As Uber works through a huge amount of internal management turmoil."
-                    action={{
-                      type: "internal",
-                      route: "/pages/profile/profile-overview",
-                      color: "white",
-                      label: "VIEW ALL",
-                    }}
-                    authors={[
-                      { image: team1, name: "Elena Morison" },
-                      { image: team2, name: "Ryan Milly" },
-                      { image: team3, name: "Nick Daniel" },
-                      { image: team4, name: "Peterson" },
-                    ]}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} xl={4}>
-                  <DefaultProjectCard
-                    image={profile2}
-                    label="project #1"
-                    title="scandinavian"
-                    description="Music is something that every person has his or her own specific opinion about."
-                    action={{
-                      type: "internal",
-                      route: "/pages/profile/profile-overview",
-                      color: "white",
-                      label: "VIEW ALL",
-                    }}
-                    authors={[
-                      { image: team3, name: "Nick Daniel" },
-                      { image: team4, name: "Peterson" },
-                      { image: team1, name: "Elena Morison" },
-                      { image: team2, name: "Ryan Milly" },
-                    ]}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} xl={4}>
-                  <DefaultProjectCard
-                    image={profile3}
-                    label="project #3"
-                    title="minimalist"
-                    description="Different people have different taste, and various types of music."
-                    action={{
-                      type: "internal",
-                      route: "/pages/profile/profile-overview",
-                      color: "white",
-                      label: "VIEW ALL",
-                    }}
-                    authors={[
-                      { image: team4, name: "Peterson" },
-                      { image: team3, name: "Nick Daniel" },
-                      { image: team2, name: "Ryan Milly" },
-                      { image: team1, name: "Elena Morison" },
-                    ]}
-                  />
-                </Grid>
-              </Grid>
-            </VuiBox>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Footer />
     </DashboardLayout>
   );
 }
-
-export default Overview;
