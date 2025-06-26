@@ -51,68 +51,112 @@ function MiniStatisticsCard({
   const safePercentage = percentage && typeof percentage.text !== "undefined" ? percentage : { color: "success", text: "" };
 
   return (
-    <Card sx={{ padding: "17px" }}>
-      <VuiBox>
-        <VuiBox>
-          <Grid container alignItems="center">
-            {direction === "left" ? (
-              <Grid item>
-                <VuiBox
-                  bgColor={info}
-                  color="#fff"
-                  width="3rem"
-                  height="3rem"
-                  borderRadius="lg"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  shadow="md"
-                >
-                  {safeIcon.component}
-                </VuiBox>
-              </Grid>
-            ) : null}
-            <Grid item xs={8}>
-              <VuiBox ml={direction === "left" ? 2 : 0} lineHeight={1}>
-                <VuiTypography
-                  variant="caption"
-                  color={bgColor === "white" ? "text" : "white"}
-                  opacity={bgColor === "white" ? 1 : 0.7}
-                  textTransform="capitalize"
-                  fontWeight={safeTitle.fontWeight}
-                >
-                  {safeTitle.text}
-                </VuiTypography>
-                <VuiTypography variant="subtitle1" fontWeight="bold" color="white">
-                  {count}{" "}
-                  <VuiTypography variant="button" color={safePercentage.color} fontWeight="bold">
-                    {safePercentage.text}
-                  </VuiTypography>
-                </VuiTypography>
+    <Card sx={{
+      padding: "22px 20px 18px 20px",
+      borderRadius: "22px",
+      background: "linear-gradient(135deg, #24141d 0%, #442536 100%)",
+      boxShadow: "0 8px 32px 0 #00000033",
+      minHeight: 140,
+      display: 'flex',
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'visible',
+    }}>
+      <VuiBox width="100%">
+        <Grid container alignItems="center" spacing={2}>
+          {direction === "left" ? (
+            <Grid item>
+              <VuiBox
+                bgColor={info}
+                color="#fff"
+                width="3.3rem"
+                height="3.3rem"
+                borderRadius="xl"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                boxShadow="0 4px 16px 0 #ff4fa355"
+                sx={{
+                  background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                  position: 'relative',
+                  top: '-12px',
+                  left: '-8px',
+                }}
+              >
+                {safeIcon.component}
               </VuiBox>
             </Grid>
-            {direction === "right" ? (
-              <Grid item xs={4}>
-                <VuiBox
-                  bgColor={info.main}
-                  color="white"
-                  width="3rem"
-                  height="3rem"
-                  marginLeft="auto"
-                  borderRadius="lg"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  shadow="md"
+          ) : null}
+          <Grid item xs={direction === "right" ? 8 : 12}>
+            <VuiBox ml={direction === "left" ? 2 : 0} lineHeight={1}>
+              <VuiTypography
+                variant="caption"
+                color="#fff"
+                opacity={bgColor === "white" ? 1 : 0.7}
+                textTransform="capitalize"
+                fontWeight={safeTitle.fontWeight}
+                mb={0.5}
+                sx={{ color: '#fff !important' }}
+              >
+                {safeTitle.text}
+              </VuiTypography>
+              <VuiTypography
+                variant="h2"
+                fontWeight="bold"
+                color="#fff"
+                sx={{ fontSize: '2.2rem', lineHeight: 1.1, mb: 0.5, color: '#fff !important' }}
+              >
+                {count}
+              </VuiTypography>
+              {safePercentage.text && (
+                <VuiTypography
+                  variant="button"
+                  color="#fff"
+                  fontWeight="bold"
+                  mt={0.5}
+                  display="inline-block"
+                  sx={{
+                    background: 'rgba(255,79,163,0.10)',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '0.98rem',
+                    letterSpacing: '0.01em',
+                    color: '#fff !important',
+                  }}
                 >
-                  <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                    {React.cloneElement(safeIcon.component, { color: '#442536', size: '22px' })}
-                  </span>
-                </VuiBox>
-              </Grid>
-            ) : null}
+                  {safePercentage.text}
+                </VuiTypography>
+              )}
+            </VuiBox>
           </Grid>
-        </VuiBox>
+          {direction === "right" ? (
+            <Grid item xs={4}>
+              <VuiBox
+                bgColor={info.main}
+                color="white"
+                width="3.3rem"
+                height="3.3rem"
+                marginLeft="auto"
+                borderRadius="xl"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                boxShadow="0 4px 16px 0 #ff4fa355"
+                sx={{
+                  background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                  position: 'relative',
+                  top: '-12px',
+                  right: '-8px',
+                }}
+              >
+                <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {React.cloneElement(safeIcon.component, { color: '#fff', size: '22px' })}
+                </span>
+              </VuiBox>
+            </Grid>
+          ) : null}
+        </Grid>
       </VuiBox>
     </Card>
   );
