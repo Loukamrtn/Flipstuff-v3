@@ -54,6 +54,7 @@ import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Profile from "layouts/profile";
 import { PrivateRoute, PublicRoute } from "./ProtectedRoutes";
+import AuthCallback from "./AuthCallback";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -135,6 +136,7 @@ export default function App() {
         )}
         {/* Suppression du layout VR et du configurator */}
         <Switch>
+          <Route path="/auth/callback" component={AuthCallback} />
           <PublicRoute path="/authentication/sign-in" component={SignIn} />
           <PublicRoute path="/authentication/sign-up" component={SignUp} />
           <PrivateRoute path="/dashboard" component={Dashboard} />
