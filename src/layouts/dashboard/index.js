@@ -127,46 +127,88 @@ function Dashboard() {
   if (!years.includes(selectedYear)) years.push(selectedYear);
   years.sort((a, b) => b - a);
 
-  // Préparation des données pour le graphique : nombre d'achats et de ventes par mois
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-  const achatsParMois = Array(12).fill(0);
-  const ventesParMois = Array(12).fill(0);
-  stocks.forEach(item => {
-    if (item.date_achat) {
-      const d = new Date(item.date_achat);
-      if (!isNaN(d) && d.getFullYear() === selectedYear) achatsParMois[d.getMonth()]++;
+  // Fonction utilitaire pour parser les dates au format DD/MM/YYYY
+  function parseDateFR(dateStr) {
+    if (!dateStr) return null;
+    // Si déjà un objet Date, retourne-le
+    if (dateStr instanceof Date) return dateStr;
+    // Si format YYYY-MM-DD, laisse Date gérer
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return new Date(dateStr);
+    // Si format DD/MM/YYYY
+    const match = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (match) {
+      const [_, d, m, y] = match;
+      return new Date(`${y}-${m}-${d}`);
     }
-    if (item.date_vente) {
-      const d = new Date(item.date_vente);
-      if (!isNaN(d) && d.getFullYear() === selectedYear) ventesParMois[d.getMonth()]++;
+    // Sinon, tente le parsing natif
+    return new Date(dateStr);
+  }
+
+  // Générer les 12 derniers mois (y compris le mois en cours)
+  const nowDate = new Date();
+  const last12Months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
+    last12Months.push({
+      label: d.toLocaleString('fr-FR', { month: 'short' }),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+    });
+  }
+
+  // Calcul des dépenses et CA pour les 12 derniers mois
+  const depensesParMois = Array(12).fill(0);
+  const caParMois = Array(12).fill(0);
+  stocks.forEach(item => {
+    if (item.date_achat && item.prix_achat) {
+      const d = parseDateFR(item.date_achat);
+      const montant = Number(item.prix_achat);
+      last12Months.forEach((m, idx) => {
+        if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month && !isNaN(montant)) {
+          depensesParMois[idx] += montant;
+        }
+      });
+    }
+    if (item.date_vente && item.prix_vente) {
+      const d = parseDateFR(item.date_vente);
+      const montant = Number(item.prix_vente);
+      last12Months.forEach((m, idx) => {
+        if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month && !isNaN(montant)) {
+          caParMois[idx] += montant;
+        }
+      });
     }
   });
+
   const lineChartData = [
     {
-      name: "Nombre d'achats",
-      data: achatsParMois,
+      name: "Dépenses",
+      data: depensesParMois,
     },
     {
-      name: "Nombre de ventes",
-      data: ventesParMois,
+      name: "Chiffre d'affaires",
+      data: caParMois,
     },
   ];
   const lineChartOptions = {
     chart: { toolbar: { show: false } },
     tooltip: { theme: "dark" },
-    dataLabels: { enabled: false },
-    stroke: { curve: "smooth" },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: { curve: "smooth", width: 3 },
+    markers: { size: 0 },
     xaxis: {
       type: "category",
-      categories: months,
+      categories: last12Months.map(m => m.label + ' ' + m.year.toString().slice(-2)),
       labels: { style: { colors: "#c8cfca", fontSize: "10px" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
     yaxis: {
       labels: { style: { colors: "#c8cfca", fontSize: "10px" } },
+      min: 0,
+      tickAmount: 5,
     },
     legend: { show: false },
     grid: { strokeDashArray: 5, borderColor: "#56577A" },
@@ -186,6 +228,122 @@ function Dashboard() {
     },
     colors: ["#ff4fa3", "#e7125d"],
   };
+
+  // --- Calculs pour la carte de droite ---
+  // Bar chart : nombre de ventes par mois sur les 12 derniers mois
+  const ventesParMois = Array(12).fill(0);
+  stocks.forEach(item => {
+    if (item.date_vente) {
+      const d = parseDateFR(item.date_vente);
+      last12Months.forEach((m, idx) => {
+        if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month) {
+          ventesParMois[idx]++;
+        }
+      });
+    }
+  });
+  const barChartDataUser = [
+    {
+      name: "Ventes",
+      data: ventesParMois,
+    },
+  ];
+  const barChartOptionsUser = {
+    chart: { toolbar: { show: false } },
+    tooltip: { theme: "dark" },
+    xaxis: {
+      type: "category",
+      categories: last12Months.map(m => m.label + ' ' + m.year.toString().slice(-2)),
+      labels: { style: { colors: "#c8cfca", fontSize: "9px" } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      labels: { style: { colors: "#c8cfca", fontSize: "9px" } },
+      min: 0,
+      tickAmount: 3,
+    },
+    grid: { strokeDashArray: 5, borderColor: "#56577A" },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "dark",
+        type: "vertical",
+        shadeIntensity: 0.5,
+        gradientToColors: ["#ff4fa3"],
+        inverseColors: false,
+        opacityFrom: 0.8,
+        opacityTo: 0.3,
+        stops: [0, 100],
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        columnWidth: "40%",
+        dataLabels: { position: "top" },
+      },
+    },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+  };
+
+  // Bénéfice moyen (sur les ventes des 12 derniers mois)
+  let totalBenef = 0, nbVentes = 0;
+  stocks.forEach(item => {
+    if (item.prix_vente && item.prix_achat && item.date_vente) {
+      const d = parseDateFR(item.date_vente);
+      if (d && !isNaN(d) && d >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+        totalBenef += Number(item.prix_vente) - Number(item.prix_achat);
+        nbVentes++;
+      }
+    }
+  });
+  const benefMoyen = nbVentes ? Math.round((totalBenef / nbVentes) * 100) / 100 : 0;
+
+  // Délai moyen de revente (en jours)
+  let totalDelai = 0, nbDelai = 0;
+  stocks.forEach(item => {
+    if (item.date_achat && item.date_vente) {
+      const dAchat = parseDateFR(item.date_achat);
+      const dVente = parseDateFR(item.date_vente);
+      if (dAchat && dVente && !isNaN(dAchat) && !isNaN(dVente) && dVente >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+        totalDelai += Math.round((dVente - dAchat) / (1000 * 60 * 60 * 24));
+        nbDelai++;
+      }
+    }
+  });
+  const delaiMoyen = nbDelai ? Math.round((totalDelai / nbDelai) * 10) / 10 : 0;
+
+  // Articles invendus > 30j
+  const nowTime = Date.now();
+  const invendus30j = stocks.filter(item => {
+    if (item.prix_vente) return false;
+    if (!item.date_achat) return false;
+    const dAchat = parseDateFR(item.date_achat);
+    return dAchat && !isNaN(dAchat) && (nowTime - dAchat.getTime()) > 30 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  // Plateforme la plus utilisée (sur les ventes des 12 derniers mois)
+  const plateformes = {};
+  stocks.forEach(item => {
+    if (item.plateforme && item.date_vente) {
+      const d = parseDateFR(item.date_vente);
+      if (d && !isNaN(d) && d >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+        plateformes[item.plateforme] = (plateformes[item.plateforme] || 0) + 1;
+      }
+    }
+  });
+  let plateformeTop = '-';
+  let maxPlateforme = 0;
+  Object.entries(plateformes).forEach(([plat, count]) => {
+    if (count > maxPlateforme) {
+      plateformeTop = plat;
+      maxPlateforme = count;
+    }
+  });
+  // Si aucune plateforme, affiche "-"
+  if (plateformeTop === '-') plateformeTop = 'Aucune';
 
   return (
     <DashboardLayout>
@@ -230,28 +388,25 @@ function Dashboard() {
         <VuiBox mb={3}>
           <Grid container spacing={3}>
             <Grid item xs={12} lg={6} xl={7}>
-              <Card>
+              <Card sx={{
+                background: linearGradient(
+                  "rgba(35,20,28,0.98)",
+                  "rgba(68,37,54,0.93)",
+                  127.09
+                ),
+                borderRadius: '22px',
+                boxShadow: '0 8px 32px 0 #00000022',
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
                 <VuiBox sx={{ height: "100%" }}>
                   <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                     <VuiTypography variant="lg" color="white" fontWeight="bold" mb="5px">
-                      Nombre d'achats et de ventes par mois {selectedYear}
+                      Dépenses et chiffre d'affaires sur les 12 derniers mois
                     </VuiTypography>
-                    <Box sx={{
-                      background: 'linear-gradient(135deg, #ff4fa3 0%, #442536 100%)',
-                      color: '#fff',
-                      borderRadius: '22px',
-                      px: 3,
-                      py: 1,
-                      fontWeight: 'bold',
-                      fontSize: '1.1rem',
-                      boxShadow: '0 4px 16px 0 #ff4fa355',
-                      display: 'flex',
-                      alignItems: 'center',
-                      minWidth: 70,
-                      justifyContent: 'center',
-                    }}>
-                      {selectedYear}
-                    </Box>
                   </Box>
                   <VuiBox display="flex" alignItems="center" mb="40px">
                     {/* <VuiTypography variant="button" color="success" fontWeight="bold">
@@ -268,146 +423,146 @@ function Dashboard() {
                   <Box display="flex" gap={3} mt={2} ml={1}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Box sx={{ width: 18, height: 6, borderRadius: 2, background: '#ff4fa3' }} />
-                      <VuiTypography color="white" fontWeight="bold" fontSize="1rem">Nombre d'achats</VuiTypography>
+                      <VuiTypography color="white" fontWeight="bold" fontSize="1rem">Dépenses</VuiTypography>
                     </Box>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Box sx={{ width: 18, height: 6, borderRadius: 2, background: '#e7125d' }} />
-                      <VuiTypography color="white" fontWeight="bold" fontSize="1rem">Nombre de ventes</VuiTypography>
+                      <VuiTypography color="white" fontWeight="bold" fontSize="1rem">Chiffre d'affaires</VuiTypography>
                     </Box>
                   </Box>
                 </VuiBox>
               </Card>
             </Grid>
             <Grid item xs={12} lg={6} xl={5}>
-              <Card>
-                <VuiBox>
-                  <VuiBox
-                    mb="24px"
-                    height="220px"
-                    sx={{
-                      background: linearGradient(
-                        cardContent.main,
-                        cardContent.state,
-                        cardContent.deg
-                      ),
-                      borderRadius: "20px",
-                    }}
-                  >
-                    <BarChart
-                      barChartData={barChartDataDashboard}
-                      barChartOptions={barChartOptionsDashboard}
-                    />
-                  </VuiBox>
-                  <VuiTypography variant="lg" color="white" fontWeight="bold" mb="5px">
-                    Active Users
-                  </VuiTypography>
-                  <VuiBox display="flex" alignItems="center" mb="40px">
-                    <VuiTypography variant="button" color="success" fontWeight="bold">
-                      (+23){" "}
-                      <VuiTypography variant="button" color="text" fontWeight="regular">
-                        than last week
-                      </VuiTypography>
-                    </VuiTypography>
-                  </VuiBox>
-                  <Grid container spacing="50px">
-                    <Grid item xs={6} md={3} lg={3}>
-                      <Stack
-                        direction="row"
-                        spacing={{ sm: "10px", xl: "4px", xxl: "10px" }}
-                        mb="6px"
-                      >
-                        <VuiBox
-                          bgColor="info"
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
-                        >
-                          <IoWallet color="info" size="12px" />
-                        </VuiBox>
-                        <VuiTypography color="text" variant="button" fontWeight="medium">
-                          Users
-                        </VuiTypography>
-                      </Stack>
-                      <VuiTypography color="white" variant="lg" fontWeight="bold" mb="8px">
-                        32,984
-                      </VuiTypography>
-                      <VuiProgress value={60} color="info" sx={{ background: "#2D2E5F" }} />
-                    </Grid>
-                    <Grid item xs={6} md={3} lg={3}>
-                      <Stack
-                        direction="row"
-                        spacing={{ sm: "10px", xl: "4px", xxl: "10px" }}
-                        mb="6px"
-                      >
-                        <VuiBox
-                          bgColor="info"
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
-                        >
-                          <IoIosRocket color="info" size="12px" />
-                        </VuiBox>
-                        <VuiTypography color="text" variant="button" fontWeight="medium">
-                          Clicks
-                        </VuiTypography>
-                      </Stack>
-                      <VuiTypography color="white" variant="lg" fontWeight="bold" mb="8px">
-                        2,42M
-                      </VuiTypography>
-                      <VuiProgress value={60} color="info" sx={{ background: "#2D2E5F" }} />
-                    </Grid>
-                    <Grid item xs={6} md={3} lg={3}>
-                      <Stack
-                        direction="row"
-                        spacing={{ sm: "10px", xl: "4px", xxl: "10px" }}
-                        mb="6px"
-                      >
-                        <VuiBox
-                          bgColor="info"
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
-                        >
-                          <FaShoppingCart color="info" size="12px" />
-                        </VuiBox>
-                        <VuiTypography color="text" variant="button" fontWeight="medium">
-                          Sales
-                        </VuiTypography>
-                      </Stack>
-                      <VuiTypography color="white" variant="lg" fontWeight="bold" mb="8px">
-                        2,400$
-                      </VuiTypography>
-                      <VuiProgress value={60} color="info" sx={{ background: "#2D2E5F" }} />
-                    </Grid>
-                    <Grid item xs={6} md={3} lg={3}>
-                      <Stack
-                        direction="row"
-                        spacing={{ sm: "10px", xl: "4px", xxl: "10px" }}
-                        mb="6px"
-                      >
-                        <VuiBox
-                          bgColor="info"
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          sx={{ borderRadius: "6px", width: "25px", height: "25px" }}
-                        >
-                          <IoBuild color="info" size="12px" />
-                        </VuiBox>
-                        <VuiTypography color="text" variant="button" fontWeight="medium">
-                          Items
-                        </VuiTypography>
-                      </Stack>
-                      <VuiTypography color="white" variant="lg" fontWeight="bold" mb="8px">
-                        320
-                      </VuiTypography>
-                      <VuiProgress value={60} color="info" sx={{ background: "#2D2E5F" }} />
-                    </Grid>
-                  </Grid>
+              <Card sx={{
+                background: linearGradient(
+                  "rgba(35,20,28,0.98)",
+                  "rgba(68,37,54,0.93)",
+                  127.09
+                ),
+                borderRadius: '22px',
+                boxShadow: '0 8px 32px 0 #00000022',
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
+                <VuiBox mb="24px" height="220px">
+                  <BarChart
+                    barChartData={barChartDataUser}
+                    barChartOptions={barChartOptionsUser}
+                  />
                 </VuiBox>
+                <Grid container spacing={2} alignItems="center" justifyContent="center">
+                  <Grid item xs={12} md={6}>
+                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          borderRadius: "50%",
+                          width: "52px",
+                          height: "52px",
+                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                        }}
+                      >
+                        <FaEuroSign color="#fff" size="22px" />
+                      </Box>
+                      <Box>
+                        <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
+                          Bénéfice Moyen
+                        </VuiTypography>
+                        <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
+                          {loading ? "..." : `${benefMoyen} €`}
+                        </VuiTypography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          borderRadius: "50%",
+                          width: "52px",
+                          height: "52px",
+                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                        }}
+                      >
+                        <FaShoppingBag color="#fff" size="22px" />
+                      </Box>
+                      <Box>
+                        <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
+                          Délai Moyen
+                        </VuiTypography>
+                        <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
+                          {loading ? "..." : `${delaiMoyen} j`}
+                        </VuiTypography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          borderRadius: "50%",
+                          width: "52px",
+                          height: "52px",
+                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                        }}
+                      >
+                        <FaBoxes color="#fff" size="22px" />
+                      </Box>
+                      <Box>
+                        <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
+                          Invendus &gt; 30j
+                        </VuiTypography>
+                        <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
+                          {loading ? "..." : invendus30j}
+                        </VuiTypography>
+                        <VuiTypography variant="button" sx={{ color: '#fff', fontSize: '0.95rem' }} fontWeight="bold" mt={0.5}>
+                          {stocks.length ? `${Math.round((invendus30j / stocks.length) * 100)}% du stock` : ""}
+                        </VuiTypography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{
+                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          borderRadius: "50%",
+                          width: "52px",
+                          height: "52px",
+                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                        }}
+                      >
+                        <FaCheckCircle color="#fff" size="22px" />
+                      </Box>
+                      <Box>
+                        <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
+                          Plateforme Top
+                        </VuiTypography>
+                        <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
+                          {loading ? "..." : plateformeTop || "Aucune"}
+                        </VuiTypography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
               </Card>
             </Grid>
           </Grid>

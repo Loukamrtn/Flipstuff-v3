@@ -35,7 +35,7 @@ export default {
     root: {
       display: "flex",
       flexDirection: "column",
-      background: "rgba(68,37,54,0.85)",
+      background: "linear-gradient(127.09deg, rgba(35,20,28,0.98), rgba(68,37,54,0.93))",
       border: "1px solid rgba(231,18,93,0.3)",
       boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
       backdropFilter: "blur(16px)",

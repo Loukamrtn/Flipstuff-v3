@@ -11,9 +11,7 @@ const WelcomeMark = () => {
     <Card sx={() => ({
       height: "340px",
       py: "32px",
-      backgroundImage: `url(${gif})`,
-      backgroundSize: "cover",
-      backgroundPosition: "50%"
+      background: "linear-gradient(127.09deg, rgba(35,20,28,0.98), rgba(68,37,54,0.93))",
     })}>
       <VuiBox height="100%" display="flex" flexDirection="column" justifyContent="space-between">
         <VuiBox>

@@ -17,6 +17,7 @@
 */
 
 import { useState, useEffect, useMemo } from "react";
+import React from "react";
 
 // react-router components
 import { Route, Switch, Redirect, useLocation } from "react-router-dom";
@@ -55,6 +56,8 @@ import Tables from "layouts/tables";
 import Profile from "layouts/profile";
 import { PrivateRoute, PublicRoute } from "./ProtectedRoutes";
 import AuthCallback from "./AuthCallback";
+import colors from "assets/theme/base/colors";
+import linearGradient from "assets/theme/functions/linearGradient";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -96,6 +99,16 @@ export default function App() {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
+
+  React.useEffect(() => {
+    document.body.style.background = linearGradient(
+      "rgba(35,20,28,0.98)",
+      "rgba(68,37,54,0.93)",
+      127.09
+    );
+    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.minHeight = "100vh";
+  }, []);
 
   const getRoutes = (allRoutes) =>
     allRoutes.map((route) => {

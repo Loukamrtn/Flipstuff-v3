@@ -88,9 +88,9 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
 
   const iconColor = color === "primary" || color === "info" ? "accentGlow" : color;
 
-  // Filtrer les routes pour ne pas afficher Sign In/Sign Up si connecté
+  // On retire Profile de la liste principale pour l'afficher en bas
   const filteredRoutes = user
-    ? routes.filter(r => r.key !== "sign-in" && r.key !== "sign-up")
+    ? routes.filter(r => r.key !== "sign-in" && r.key !== "sign-up" && r.key !== "profile")
     : routes;
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
@@ -178,60 +178,82 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
       </VuiBox>
       <Divider light />
       <List>{renderRoutes}</List>
-      <VuiBox
-        my={2}
-        mx={2}
-        mt="auto"
-        sx={({ breakpoints }) => ({
-          [breakpoints.up("xl")]: {
+      {/* Profile + Déconnexion sticky en bas */}
+      {user && (
+        <VuiBox
+          sx={{
+            position: 'fixed',
+            left: 0,
+            bottom: 0,
+            width: 250,
+            zIndex: 1201,
+            background: 'linear-gradient(127.09deg, rgba(35,20,28,0.98), rgba(68,37,54,0.93))',
+            boxShadow: '0 -2px 16px 0 #00000022',
             pt: 2,
-          },
-          [breakpoints.only("xl")]: {
-            pt: 1,
-          },
-          [breakpoints.down("xl")]: {
-            pt: 2,
-          },
-        })}
-      >
-        {/* Bouton de déconnexion en bas si connecté */}
-        {user && (
-          <div style={{
-            position: 'absolute',
-            bottom: 24,
-            width: '100%',
+            pb: 2.5,
             display: 'flex',
-            justifyContent: 'center'
-          }}>
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          {/* Lien Profile en bas */}
+          <NavLink to="/profile" style={{ width: '90%', textDecoration: 'none' }}>
             <button
-              onClick={async () => { await supabase.auth.signOut(); window.location.href = '/sign-in'; }}
               style={{
-                background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+                width: '100%',
+                background: 'rgba(255,255,255,0.07)',
                 color: '#fff',
                 border: 'none',
-                borderRadius: 10,
-                padding: '12px 0',
-                width: '90%',
-                fontWeight: 'bold',
-                fontSize: '1.08rem',
-                letterSpacing: '0.04em',
+                borderRadius: 12,
+                padding: '10px 0',
+                fontWeight: 600,
+                fontSize: '1.05rem',
+                letterSpacing: '0.01em',
+                marginBottom: 6,
                 cursor: 'pointer',
-                boxShadow: '0 2px 12px #ff4fa340',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 10,
-                transition: 'background 0.2s, box-shadow 0.2s'
+                gap: 8,
+                transition: 'background 0.18s',
               }}
-              onMouseOver={e => e.currentTarget.style.background = '#e7125d'}
-              onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)'}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.13)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
             >
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M16 13v-2H7V8l-5 4 5 4v-3h9zm3-10H5c-1.1 0-2 .9-2 2v6h2V5h14v14H5v-4H3v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-              Se déconnecter
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+              Profile
             </button>
-          </div>
-        )}
-      </VuiBox>
+          </NavLink>
+          {/* Bouton de déconnexion en bas */}
+          <button
+            onClick={async () => { await supabase.auth.signOut(); window.location.href = '/sign-in'; }}
+            style={{
+              background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '12px 0',
+              width: '90%',
+              fontWeight: 'bold',
+              fontSize: '1.08rem',
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+              boxShadow: '0 2px 12px #ff4fa340',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              transition: 'background 0.2s, box-shadow 0.2s',
+            }}
+            onMouseOver={e => e.currentTarget.style.background = '#e7125d'}
+            onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)'}
+          >
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="#fff" d="M16 13v-2H7V8l-5 4 5 4v-3h9zm3-10H5c-1.1 0-2 .9-2 2v6h2V5h14v14H5v-4H3v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            Se déconnecter
+          </button>
+        </VuiBox>
+      )}
     </SidenavRoot>
   );
 }
