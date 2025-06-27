@@ -46,6 +46,7 @@ import Tables from "layouts/tables";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import ResetPassword from "layouts/authentication/reset-password";
 
 // Vision UI Dashboard React icons
 import { IoRocketSharp } from "react-icons/io5";
@@ -121,6 +122,13 @@ const routes = [
     route: "/authentication/sign-up",
     icon: <IoRocketSharp size="15px" color="inherit" />,
     component: SignUp,
+    noCollapse: true,
+  },
+  {
+    name: "Réinitialiser le mot de passe",
+    key: "reset-password",
+    route: "/authentication/reset-password",
+    component: ResetPassword,
     noCollapse: true,
   },
 ];

@@ -191,7 +191,7 @@ export default function SignIn() {
               padding: '14px 16px',
               borderRadius: 14,
               border: '1.5px solid #ff4fa3',
-              marginBottom: 18,
+              marginBottom: 8,
               background: 'rgba(255,255,255,0.10)',
               color: '#fff',
               fontSize: '1.07rem',
@@ -205,6 +205,22 @@ export default function SignIn() {
             onFocus={e => e.target.style.border = '2px solid #ff4fa3'}
             onBlur={e => e.target.style.border = '1.5px solid #ff4fa3'}
           />
+          <div style={{ width: '100%', textAlign: 'right', marginBottom: 10 }}>
+            <Link
+              to="/authentication/reset-password"
+              style={{
+                color: '#ff4fa3',
+                fontWeight: 600,
+                fontSize: '0.98rem',
+                textDecoration: 'none',
+                transition: 'color 0.18s',
+              }}
+              onMouseOver={e => e.currentTarget.style.color = '#ff8c68'}
+              onMouseOut={e => e.currentTarget.style.color = '#ff4fa3'}
+            >
+              Mot de passe oublié&nbsp;?
+            </Link>
+          </div>
           <button
             type="submit"
             disabled={loading}

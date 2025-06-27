@@ -51,6 +51,7 @@ import { useVisionUIController, setMiniSidenav, setOpenConfigurator } from "cont
 import { AuthProvider } from "context/AuthContext";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
+import ResetPassword from "layouts/authentication/reset-password";
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Profile from "layouts/profile";
@@ -134,7 +135,8 @@ export default function App() {
         <CssBaseline />
         {layout === "dashboard" &&
           pathname !== "/authentication/sign-in" &&
-          pathname !== "/authentication/sign-up" && (
+          pathname !== "/authentication/sign-up" &&
+          pathname !== "/authentication/reset-password" && (
             <>
               <Sidenav
                 color={sidenavColor}
@@ -152,6 +154,7 @@ export default function App() {
           <Route path="/auth/callback" component={AuthCallback} />
           <PublicRoute path="/authentication/sign-in" component={SignIn} />
           <PublicRoute path="/authentication/sign-up" component={SignUp} />
+          <PublicRoute path="/authentication/reset-password" component={ResetPassword} />
           <PrivateRoute path="/dashboard" component={Dashboard} />
           <PrivateRoute path="/tables" component={Tables} />
           <PrivateRoute path="/profile" component={Profile} />
