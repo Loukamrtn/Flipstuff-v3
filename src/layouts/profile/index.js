@@ -169,11 +169,68 @@ export default function Profile() {
               <VuiTypography variant="h4" color="white" fontWeight="bold" mb={1} sx={{ letterSpacing: '0.01em' }}>{displayName}</VuiTypography>
               <VuiTypography variant="button" color="text" mb={1}>{user.email}</VuiTypography>
               <Divider sx={{ width: '100%', my: 2, bgcolor: '#ff4fa355' }} />
-              <VuiTypography variant="button" color="text">ID utilisateur : <b>{user.id}</b></VuiTypography>
-              <VuiTypography variant="button" color="text">Provider : <b>{providerLabel[provider] || provider}</b></VuiTypography>
-              {createdAt && (
-                <VuiTypography variant="button" color="text">Inscrit le : {createdAt.toLocaleDateString()}</VuiTypography>
-              )}
+              <Box component="form" autoComplete="off" sx={{ width: '100%' }}>
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-displayName">
+                    Pseudo
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="displayName"
+                    id="profile-displayName"
+                    value={form.displayName}
+                    onChange={handleFormChange}
+                    fullWidth
+                    autoFocus
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Pseudo ou nom complet"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      },
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-email">
+                    Email
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="email"
+                    id="profile-email"
+                    value={form.email}
+                    onChange={handleFormChange}
+                    fullWidth
+                    type="email"
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Adresse email"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
+                      },
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
+              </Box>
             </Card>
             {/* Section Sécurité */}
             <Card sx={{
@@ -230,64 +287,66 @@ export default function Profile() {
               </VuiTypography>
               <form onSubmit={handleSave} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'center' }}>
                 {feedback && <Alert severity={feedback.type} sx={{ width: '100%' }}>{feedback.msg}</Alert>}
-                <TextField
-                  label="Pseudo"
-                  name="displayName"
-                  value={form.displayName}
-                  onChange={handleFormChange}
-                  fullWidth
-                  autoFocus
-                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
-                  placeholder="Pseudo"
-                  sx={{
-                    mb: 1,
-                    '& .MuiOutlinedInput-root': {
-                      background: '#2a1833',
-                      borderRadius: 3,
-                      '& input': {
-                        background: 'transparent',
-                        color: '#fff',
-                        padding: '14px 16px',
-                        fontWeight: 500,
-                        fontSize: '1.08rem',
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-displayName">
+                    Pseudo
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="displayName"
+                    id="profile-displayName"
+                    value={form.displayName}
+                    onChange={handleFormChange}
+                    fullWidth
+                    autoFocus
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Pseudo ou nom complet"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
                       },
-                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                      '&:hover fieldset': { borderColor: '#fff' },
-                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
-                    },
-                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
-                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
-                  }}
-                />
-                <TextField
-                  label="Email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleFormChange}
-                  fullWidth
-                  type="email"
-                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
-                  placeholder="Email"
-                  sx={{
-                    mb: 1,
-                    '& .MuiOutlinedInput-root': {
-                      background: '#2a1833',
-                      borderRadius: 3,
-                      '& input': {
-                        background: 'transparent',
-                        color: '#fff',
-                        padding: '14px 16px',
-                        fontWeight: 500,
-                        fontSize: '1.08rem',
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-email">
+                    Email
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="email"
+                    id="profile-email"
+                    value={form.email}
+                    onChange={handleFormChange}
+                    fullWidth
+                    type="email"
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Adresse email"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
                       },
-                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                      '&:hover fieldset': { borderColor: '#fff' },
-                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
-                    },
-                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
-                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
-                  }}
-                />
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
                 <Button
                   type="submit"
                   variant="contained"
@@ -329,82 +388,66 @@ export default function Profile() {
               </VuiTypography>
               <form onSubmit={handleSavePassword} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'center' }}>
                 {passwordFeedback && <Alert severity={passwordFeedback.type} sx={{ width: '100%' }}>{passwordFeedback.msg}</Alert>}
-                <TextField
-                  label="Nouveau mot de passe"
-                  name="password"
-                  value={passwordForm.password}
-                  onChange={handlePasswordFormChange}
-                  type={showPassword ? "text" : "password"}
-                  fullWidth
-                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
-                  placeholder="Nouveau mot de passe"
-                  sx={{
-                    mb: 1,
-                    '& .MuiOutlinedInput-root': {
-                      background: '#2a1833',
-                      borderRadius: 3,
-                      '& input': {
-                        background: 'transparent',
-                        color: '#fff',
-                        padding: '14px 16px',
-                        fontWeight: 500,
-                        fontSize: '1.08rem',
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-password">
+                    Nouveau mot de passe
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="password"
+                    id="profile-password"
+                    value={passwordForm.password}
+                    onChange={handlePasswordFormChange}
+                    type={showPassword ? "text" : "password"}
+                    fullWidth
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Nouveau mot de passe"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
                       },
-                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                      '&:hover fieldset': { borderColor: '#fff' },
-                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
-                    },
-                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
-                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(v => !v)} edge="end" size="small" sx={{ color: '#ff4fa3' }}>
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-                <TextField
-                  label="Confirmer le mot de passe"
-                  name="password2"
-                  value={passwordForm.password2}
-                  onChange={handlePasswordFormChange}
-                  type={showPassword2 ? "text" : "password"}
-                  fullWidth
-                  InputLabelProps={{ style: { color: '#fff', fontWeight: 600 }, shrink: true }}
-                  placeholder="Confirmer le mot de passe"
-                  sx={{
-                    mb: 1,
-                    '& .MuiOutlinedInput-root': {
-                      background: '#2a1833',
-                      borderRadius: 3,
-                      '& input': {
-                        background: 'transparent',
-                        color: '#fff',
-                        padding: '14px 16px',
-                        fontWeight: 500,
-                        fontSize: '1.08rem',
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
+                <Box display="flex" flexDirection="column" alignItems="flex-start" mb={1} width="100%">
+                  <VuiTypography sx={{ color: '#fff', fontWeight: 700, textAlign: 'left', alignSelf: 'flex-start', mb: 0.5 }} fontSize="0.98rem" component="label" htmlFor="profile-password2">
+                    Confirmer le mot de passe
+                  </VuiTypography>
+                  <TextField
+                    label=""
+                    name="password2"
+                    id="profile-password2"
+                    value={passwordForm.password2}
+                    onChange={handlePasswordFormChange}
+                    type={showPassword2 ? "text" : "password"}
+                    fullWidth
+                    InputLabelProps={{ shrink: false }}
+                    placeholder="Confirmer le mot de passe"
+                    InputProps={{
+                      style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
+                      disableUnderline: true,
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        background: '#24141d',
+                        borderRadius: 3,
+                        '& fieldset': { borderColor: '#444', borderWidth: 1 },
+                        '&:hover fieldset': { borderColor: '#ff4fa3' },
+                        '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
                       },
-                      '& fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                      '&:hover fieldset': { borderColor: '#fff' },
-                      '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2.5 },
-                    },
-                    '& .MuiInputLabel-root': { color: '#fff', fontWeight: 600 },
-                    'input::placeholder': { color: '#ffb6e6', opacity: 1, fontWeight: 400 },
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword2(v => !v)} edge="end" size="small" sx={{ color: '#ff4fa3' }}>
-                          {showPassword2 ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
+                      'input::placeholder': { color: '#bfa2c8', opacity: 1 },
+                    }}
+                  />
+                </Box>
                 <Button
                   type="submit"
                   variant="contained"
