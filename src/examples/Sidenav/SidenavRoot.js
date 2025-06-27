@@ -84,10 +84,8 @@ export default styled(Drawer)(({ theme, ownerState }) => {
             gradients.sidenav.state,
             gradients.sidenav.deg
           ),
-      backdropFilter: transparentSidenav ? "unset" : "blur(120px)",
-      overflowX: "hidden",
+    backdropFilter: transparentSidenav ? "unset" : "blur(120px)",
       ...(miniSidenav ? drawerCloseStyles() : drawerOpenStyles()),
     },
-    overflowX: "hidden",
   };
 });

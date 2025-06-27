@@ -18,6 +18,9 @@
 
 // @mui material components
 import Card from "@mui/material/Card";
+import Box from "@mui/material/Box";
+import Skeleton from "@mui/material/Skeleton";
+import { memo } from "react";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -38,56 +41,66 @@ import AdobeXD from "examples/Icons/AdobeXD";
 // Vision UI Dashboard theme imports
 import palette from "assets/theme/base/colors";
 
-function OrdersOverview() {
+const OrdersOverview = memo(function OrdersOverview({ stocks, derniersAjouts }) {
+  const loading = !stocks || !derniersAjouts;
+
   return (
-    <Card className="h-100">
+    <Card className="h-100" sx={{ height: '100% !important' }}>
       <VuiBox mb="16px">
         <VuiTypography variant="lg" fontWeight="bold" mb="5px" color="white">
-          Orders overview
+          Derniers ajouts au stock
         </VuiTypography>
-        <VuiBox mb={2}>
-          <VuiBox display="flex" alignItems="center">
-            <BsCheckCircleFill color="green" size="15px" mr="5px" />
-            <VuiTypography variant="button" color="text" fontWeight="medium" ml="5px" mr="2px">
-              +30%
-            </VuiTypography>{" "}
-            <VuiTypography variant="button" color="text" fontWeight="regular">
-              {" "}
-              this month
-            </VuiTypography>
-          </VuiBox>
-        </VuiBox>
       </VuiBox>
       <VuiBox>
-        <TimelineItem
-          icon={<FaBell size="16px" color={palette.info.main} />}
-          title="$2400, Design changes"
-          dateTime="22 DEC 7:20 PM"
-        />
-        <TimelineItem
-          icon={<IoLogoCss3 size="16px" color={palette.error.main} />}
-          title="New order #1832412"
-          dateTime="21 DEC 11 PM"
-        />
-        <TimelineItem
-          icon={<FaShoppingCart size="16px" color={palette.lightblue.main} />}
-          title="Server payments for April"
-          dateTime="21 DEC 9:34 PM"
-        />
-        <TimelineItem
-          icon={<BsCreditCardFill size="16px" color={palette.warning.main} />}
-          title="New card added for order #4395133"
-          dateTime="20 DEC 2:20 AM"
-        />
-        <TimelineItem
-          icon={<SiDropbox size="16px" color={palette.primary.focus} />}
-          title="New card added for order #4395133"
-          dateTime="18 DEC 4:54 AM"
-        />
-        <TimelineItem icon={<AdobeXD size="20px" />} title="New order #9583120" dateTime="17 DEC" />
+        {loading ? (
+          <>
+            <VuiBox display="flex" alignItems="center" px={1.5} pb={0.5} pt={0.5} sx={{ opacity: 0.8, minHeight: 36 }}>
+              <Box sx={{ width: 24, minWidth: 24, mr: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+              <Skeleton width={80} sx={{ flex: 1, bgcolor: 'grey.800' }} />
+              <Skeleton width={60} sx={{ minWidth: 80, bgcolor: 'grey.800' }} />
+              <Skeleton width={70} sx={{ minWidth: 90, bgcolor: 'grey.800' }} />
+            </VuiBox>
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2, bgcolor: 'grey.900' }} />
+            ))}
+          </>
+        ) : derniersAjouts.length === 0 ? (
+          <VuiTypography color="text">Aucun ajout récent.</VuiTypography>
+        ) : (
+          <>
+            <VuiBox display="flex" alignItems="center" px={1.5} pb={0.5} pt={0.5} sx={{ opacity: 0.8, minHeight: 36 }}>
+              <Box sx={{ width: 24, minWidth: 24, mr: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+              <VuiTypography color="text" fontWeight="bold" fontSize="1rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>Paire</VuiTypography>
+              <VuiTypography color="text" fontWeight="bold" fontSize="1rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>Prix</VuiTypography>
+              <VuiTypography color="text" fontWeight="bold" fontSize="1rem" sx={{ minWidth: 90, textAlign: 'right' }}>Date</VuiTypography>
+            </VuiBox>
+            <VuiBox component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+              {derniersAjouts.map((item, idx) => (
+                <VuiBox
+                  key={item.id || idx}
+                  component="li"
+                  display="flex"
+                  alignItems="center"
+                  borderBottom={idx < derniersAjouts.length - 1 ? '1px solid #33223a' : 'none'}
+                  py={1.1}
+                  px={1.5}
+                  gap={1}
+                  minHeight={36}
+                >
+                  <Box sx={{ width: 24, minWidth: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FaShoppingCart size="18px" color="#ff4fa3" />
+                  </Box>
+                  <VuiTypography color="white" fontWeight="bold" fontSize="1.01rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>{item.nom}</VuiTypography>
+                  <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_achat ? `${item.prix_achat} €` : '-'}</VuiTypography>
+                  <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 90, textAlign: 'right' }}>{item.date_achat ? new Date(item.date_achat).toLocaleDateString() : '-'}</VuiTypography>
+                </VuiBox>
+              ))}
+            </VuiBox>
+          </>
+        )}
       </VuiBox>
     </Card>
   );
-}
+});
 
 export default OrdersOverview;

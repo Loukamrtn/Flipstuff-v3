@@ -30,6 +30,7 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -37,7 +38,6 @@ import VuiTypography from "components/VuiTypography";
 import VuiInput from "components/VuiInput";
 
 // Vision UI Dashboard React example components
-import Breadcrumbs from "examples/Breadcrumbs";
 import NotificationItem from "examples/Items/NotificationItem";
 
 // Custom styles for DashboardNavbar
@@ -145,53 +145,27 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
       sx={(theme) => navbar(theme, { transparentNavbar, absolute, light })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
-        <VuiBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
-          <Breadcrumbs icon="home" title={route && route.length > 0 ? route[route.length - 1] : ""} route={route} light={light} />
-        </VuiBox>
-        {isMini ? null : (
-          <VuiBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <VuiBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in">
-                <IconButton sx={navbarIconButton} size="small">
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light ? white.main : dark.main,
-                    })}
-                  >
-                    account_circle
-                  </Icon>
-                  <VuiTypography
-                    variant="button"
-                    fontWeight="medium"
-                    color={light ? "white" : "dark"}
-                  >
-                    Sign in
-                  </VuiTypography>
-                </IconButton>
-              </Link>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarMobileMenu}
-                onClick={handleMiniSidenav}
-              >
-                <Icon className={"text-white"}>{miniSidenav ? "menu_open" : "menu"}</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon className={light ? "text-white" : "text-dark"}>notifications</Icon>
-              </IconButton>
-              {renderMenu()}
-            </VuiBox>
+        <VuiBox color="inherit" display="flex" alignItems="center" width="100%" justifyContent="space-between">
+          {/* Nom de la page à gauche */}
+          <VuiTypography variant="h4" color="white" fontWeight="bold" textTransform="capitalize">
+            {route && route.length > 0 ? route[route.length - 1] : ""}
+          </VuiTypography>
+          {/* Notifications à droite */}
+          <VuiBox color={light ? "white" : "inherit"}>
+            <IconButton
+              size="small"
+              color="inherit"
+              sx={navbarIconButton}
+              aria-controls="notification-menu"
+              aria-haspopup="true"
+              variant="contained"
+              onClick={handleOpenMenu}
+            >
+              <IoMdNotificationsOutline size={26} style={{ color: light ? '#fff' : 'inherit' }} />
+            </IconButton>
+            {renderMenu()}
           </VuiBox>
-        )}
+        </VuiBox>
       </Toolbar>
     </AppBar>
   );

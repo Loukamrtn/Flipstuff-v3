@@ -60,7 +60,7 @@ import { lineChartOptionsDashboard } from "layouts/dashboard/data/lineChartOptio
 import { barChartDataDashboard } from "layouts/dashboard/data/barChartData";
 import { barChartOptionsDashboard } from "layouts/dashboard/data/barChartOptions";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../../supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 
@@ -82,7 +82,7 @@ function Dashboard() {
       }
       const { data, error } = await supabase
         .from("stock")
-        .select("id, prix_achat, prix_vente, date_vente, date_achat")
+        .select("id, nom, prix_achat, prix_vente, date_vente, date_achat")
         .eq("user_id", user.id);
       setStocks(data || []);
       setLoading(false);
@@ -345,6 +345,26 @@ function Dashboard() {
   // Si aucune plateforme, affiche "-"
   if (plateformeTop === '-') plateformeTop = 'Aucune';
 
+  // Calculer les ventes du mois en cours en mémoire
+  const ventesMois = useMemo(() => {
+    const now = new Date();
+    const mois = now.getMonth();
+    const annee = now.getFullYear();
+    return (stocks || []).filter(item => {
+      if (!item.date_vente || !item.prix_vente) return false;
+      const d = new Date(item.date_vente);
+      return d.getMonth() === mois && d.getFullYear() === annee;
+    });
+  }, [stocks]);
+
+  // Calculer les derniers ajouts (5 derniers)
+  const derniersAjouts = useMemo(() => {
+    return (stocks || [])
+      .filter(item => item.nom && item.prix_achat && item.date_achat)
+      .sort((a, b) => new Date(b.date_achat) - new Date(a.date_achat))
+      .slice(0, 5);
+  }, [stocks]);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -569,10 +589,10 @@ function Dashboard() {
         </VuiBox>
         <Grid container spacing={3} direction="row" justifyContent="center" alignItems="stretch">
           <Grid item xs={12} md={6} lg={8}>
-            <Projects />
+            <Projects ventesMois={ventesMois} />
           </Grid>
           <Grid item xs={12} md={6} lg={4}>
-            <OrderOverview />
+            <OrderOverview stocks={stocks} derniersAjouts={derniersAjouts} />
           </Grid>
         </Grid>
       </VuiBox>

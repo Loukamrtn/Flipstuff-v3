@@ -50,6 +50,7 @@ import { useVisionUIController, setMiniSidenav, setTransparentSidenav } from "co
 import SimmmpleLogo from "examples/Icons/SimmmpleLogo";
 import { useAuth } from "context/AuthContext";
 import { supabase } from "../../supabaseClient";
+import logoFlipstuff from "assets/images/logos/Flipstuff.png";
 
 // function Sidenav({ color, brand, brandName, routes, ...rest }) {
 function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
@@ -172,9 +173,20 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
             <Icon sx={{ fontWeight: "bold" }}>close</Icon>
           </VuiTypography>
         </VuiBox>
-        <VuiBox display="flex" alignItems="center" justifyContent="center" py={2}>
-          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.5rem', letterSpacing: '0.05em', fontFamily: 'inherit' }}>Flipstuff</span>
-        </VuiBox>
+        <img 
+          src={logoFlipstuff} 
+          alt="Flipstuff Logo" 
+          style={{ 
+            width: '100%', 
+            height: 'auto', 
+            display: 'block', 
+            filter: 'drop-shadow(0 2px 12px #ff4fa355)',
+            margin: 0,
+            padding: 0,
+            border: 0,
+            boxSizing: 'border-box',
+          }} 
+        />
       </VuiBox>
       <Divider light />
       <List>{renderRoutes}</List>

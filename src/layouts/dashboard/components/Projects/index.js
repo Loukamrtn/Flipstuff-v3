@@ -16,14 +16,15 @@
 
 */
 
-import { useState } from "react";
+import { memo } from "react";
+import { FaCheckCircle } from "react-icons/fa";
+import Skeleton from "@mui/material/Skeleton";
 
 // @mui material components
 import Card from "@mui/material/Card";
 import Icon from "@mui/material/Icon";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { BsCheckCircleFill } from "react-icons/bs";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -35,79 +36,47 @@ import Table from "examples/Tables/Table";
 // Data
 import data from "layouts/dashboard/components/Projects/data";
 
-function Projects() {
-  const rawData = data();
-  const columns = Array.isArray(rawData.columns) ? rawData.columns : [];
-  const rows = Array.isArray(rawData.rows) ? rawData.rows : [];
-  const [menu, setMenu] = useState(null);
-
-  const openMenu = ({ currentTarget }) => setMenu(currentTarget);
-  const closeMenu = () => setMenu(null);
-
-  const renderMenu = (
-    <Menu
-      id="simple-menu"
-      anchorEl={menu}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "left",
-      }}
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={Boolean(menu)}
-      onClose={closeMenu}
-    >
-      <MenuItem onClick={closeMenu}>Action</MenuItem>
-      <MenuItem onClick={closeMenu}>Another action</MenuItem>
-      <MenuItem onClick={closeMenu}>Something else</MenuItem>
-    </Menu>
-  );
-
+const Projects = memo(function Projects({ ventesMois }) {
+  const loading = ventesMois === undefined;
   return (
-    <Card
-      sx={{
-        height: "100% !important",
-      }}
-    >
-      <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="32px">
-        <VuiBox mb="auto">
-          <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
-            Projects
-          </VuiTypography>
-          <VuiBox display="flex" alignItems="center" lineHeight={0}>
-            <BsCheckCircleFill color="green" size="15px" />
-            <VuiTypography variant="button" fontWeight="regular" color="text" ml="5px">
-              &nbsp;<strong>30 done</strong> this month
-            </VuiTypography>
-          </VuiBox>
-        </VuiBox>
-        <VuiBox color="text" px={2}>
-          <Icon sx={{ cursor: "pointer", fontWeight: "bold" }} fontSize="small" onClick={openMenu}>
-            more_vert
-          </Icon>
-        </VuiBox>
-        {renderMenu}
+    <Card sx={{ height: "100% !important" }}>
+      <VuiBox mb={2}>
+        <VuiTypography color="white" variant="lg" fontWeight="bold" mb="6px">
+          Historique des ventes du mois
+        </VuiTypography>
+        <VuiTypography color="text" fontSize="1.01rem" mb={1}>
+          {loading ? <Skeleton width={120} /> : ventesMois.length === 0 ? "Aucune vente ce mois-ci." : `${ventesMois.length} vente${ventesMois.length > 1 ? "s" : ""} ce mois-ci`}
+        </VuiTypography>
       </VuiBox>
-      <VuiBox
-        sx={{
-          "& th": {
-            borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
-              `${borderWidth[1]} solid ${grey[700]}`,
-          },
-          "& .MuiTableRow-root:not(:last-child)": {
-            "& td": {
-              borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
-                `${borderWidth[1]} solid ${grey[700]}`,
-            },
-          },
-        }}
-      >
-        <Table columns={columns} rows={rows} />
+      <VuiBox component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2 }} />
+          ))
+        ) : (
+          ventesMois.map((item, idx) => (
+            <VuiBox
+              key={item.id || idx}
+              component="li"
+              display="flex"
+              alignItems="center"
+              borderBottom={idx < ventesMois.length - 1 ? '1px solid #33223a' : 'none'}
+              py={1.1}
+              px={1.5}
+              gap={1}
+              minHeight={36}
+            >
+              <FaCheckCircle size="18px" color="#1ed760" style={{ minWidth: 18, marginRight: 8 }} />
+              <VuiTypography color="white" fontWeight="bold" fontSize="1.01rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>{item.nom}</VuiTypography>
+              <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_vente ? `${item.prix_vente} €` : '-'}</VuiTypography>
+              <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 90, textAlign: 'right' }}>{item.date_vente ? new Date(item.date_vente).toLocaleDateString() : '-'}</VuiTypography>
+              <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 80, textAlign: 'right', opacity: 0.8 }}>{item.plateforme || '-'}</VuiTypography>
+            </VuiBox>
+          ))
+        )}
       </VuiBox>
     </Card>
   );
-}
+});
 
 export default Projects;
