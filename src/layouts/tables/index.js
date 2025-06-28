@@ -64,6 +64,7 @@ function Stock() {
   const [deleteItem, setDeleteItem] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
   const [deleteManyDialog, setDeleteManyDialog] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -102,7 +103,18 @@ function Stock() {
     return true;
   });
 
-  const rows = filteredStocks.map(item => ({
+  const sortedStocks = [...filteredStocks];
+  if (sortConfig.key) {
+    sortedStocks.sort((a, b) => {
+      const aValue = a[sortConfig.key] || '';
+      const bValue = b[sortConfig.key] || '';
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  const rows = sortedStocks.map(item => ({
     nom: item.nom,
     taille: item.taille,
     prix_achat: item.prix_achat ? `${item.prix_achat} €` : "-",
@@ -141,7 +153,7 @@ function Stock() {
   const CardGrid = () => (
     <>
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }} gap={3}>
-        {filteredStocks.map((item, idx) => {
+        {sortedStocks.map((item, idx) => {
           const isSold = !!item.prix_vente && !!item.date_vente;
           const checked = selectedItems.includes(item.id);
           return (
@@ -405,6 +417,15 @@ function Stock() {
       .eq("user_id", user.id)
       .order("date_achat", { ascending: false });
     setStocks(data || []);
+  };
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
   };
 
   return (
@@ -837,7 +858,10 @@ function Stock() {
             {error && <VuiTypography color="error.main">Erreur : {error}</VuiTypography>}
             {viewMode === 'list' ? (
               <>
-                <Table columns={columns} rows={rows} />
+                <Table columns={columns} rows={sortedStocks.map(item => ({ ...item, id: item.id }))} selectedItems={selectedItems} toggleSelectItem={toggleSelectItem} selectAll={() => {
+                  if (selectedItems.length === sortedStocks.length) clearSelection();
+                  else setSelectedItems(sortedStocks.map(item => item.id));
+                }} handleSort={handleSort} sortConfig={sortConfig} />
                 {loading && <VuiTypography color="text" mt={2}>Chargement...</VuiTypography>}
                 {!loading && rows.length === 0 && <VuiTypography color="text" mt={2}>Aucun stock trouvé.</VuiTypography>}
               </>
@@ -845,7 +869,7 @@ function Stock() {
               <>
                 <CardGrid />
                 {loading && <VuiTypography color="text" mt={2}>Chargement...</VuiTypography>}
-                {!loading && filteredStocks.length === 0 && <VuiTypography color="text" mt={2}>Aucun stock trouvé.</VuiTypography>}
+                {!loading && sortedStocks.length === 0 && <VuiTypography color="text" mt={2}>Aucun stock trouvé.</VuiTypography>}
               </>
             )}
           </VuiBox>

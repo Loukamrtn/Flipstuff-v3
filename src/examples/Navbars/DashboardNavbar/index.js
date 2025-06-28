@@ -31,6 +31,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
 import { IoMdNotificationsOutline } from "react-icons/io";
+import { FaDiscord } from "react-icons/fa";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -60,6 +61,7 @@ import {
 // Images
 import team2 from "assets/images/team-2.jpg";
 import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
+import logoFS from "assets/images/logos/FS.png";
 
 function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
   const [navbarType, setNavbarType] = useState();
@@ -113,26 +115,9 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
       sx={{ mt: 2 }}
     >
       <NotificationItem
-        image={<img src={team2} alt="person" />}
-        title={["New message", "from Laur"]}
-        date="13 minutes ago"
-        onClick={handleCloseMenu}
-      />
-      <NotificationItem
-        image={<img src={logoSpotify} alt="person" />}
-        title={["New album", "by Travis Scott"]}
-        date="1 day"
-        onClick={handleCloseMenu}
-      />
-      <NotificationItem
-        color="text"
-        image={
-          <Icon fontSize="small" sx={{ color: ({ palette: { white } }) => white.main }}>
-            payment
-          </Icon>
-        }
-        title={["", "Payment successfully completed"]}
-        date="2 days"
+        image={<img src={logoFS} alt="Flipstuff logo" style={{ width: 32, height: 32, borderRadius: 8 }} />}
+        title={["Flipstuff est en développement !"]}
+        date={"Toute critique, bug ou suggestion est bienvenue sur le Discord."}
         onClick={handleCloseMenu}
       />
     </Menu>
@@ -151,7 +136,7 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
             {route && route.length > 0 ? route[route.length - 1] : ""}
           </VuiTypography>
           {/* Notifications à droite */}
-          <VuiBox color={light ? "white" : "inherit"}>
+          <VuiBox color={light ? "white" : "inherit"} display="flex" alignItems="center" gap={1}>
             <IconButton
               size="small"
               color="inherit"
@@ -164,6 +149,18 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
               <IoMdNotificationsOutline size={26} style={{ color: light ? '#fff' : 'inherit' }} />
             </IconButton>
             {renderMenu()}
+            <IconButton
+              size="small"
+              color="inherit"
+              sx={navbarIconButton}
+              component="a"
+              href="https://discord.gg/HcnDGWV6Bt"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Discord"
+            >
+              <FaDiscord size={22} style={{ color: '#fff' }} />
+            </IconButton>
           </VuiBox>
         </VuiBox>
       </Toolbar>

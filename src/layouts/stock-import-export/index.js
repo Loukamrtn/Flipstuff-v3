@@ -11,6 +11,9 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import { supabase } from '../../supabaseClient';
 import { useAuth } from '../../context/AuthContext';
+import Footer from "examples/Footer";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 
 const REQUIRED_FIELDS = [
   { key: "nom", label: "Nom" },
@@ -136,96 +139,100 @@ export default function StockImportExport() {
   }, [importStatus]);
 
   return (
-    <VuiBox display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="80vh">
-      <VuiTypography variant="h3" color="info" fontWeight="bold" mb={4}>
-        Importer / Exporter le stock
-      </VuiTypography>
-      <VuiBox display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="center" alignItems="stretch" width="100%" maxWidth={900} gap={4}>
-        {/* Carte Import */}
-        <Card sx={{ flex: 1, bgcolor: "rgba(44, 20, 34, 0.85)", borderRadius: 3, boxShadow: '0 8px 32px 0 #ff4fa340', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-          {/* Message de succès global */}
-          {importStatus && importStatus.type === 'success' && (
-            <VuiBox position="absolute" top={12} left={0} width="100%" zIndex={10} display="flex" justifyContent="center">
-              <VuiTypography color="success.main" fontWeight="bold" bgcolor="#e6fff2" borderRadius={2} px={3} py={1} boxShadow="0 2px 8px #1ed76022">
-                {importStatus.msg}
-              </VuiTypography>
-            </VuiBox>
-          )}
-          <VuiTypography variant="h5" color="info" fontWeight="bold" mb={2}>
-            Importer le stock
-          </VuiTypography>
-          <VuiTypography variant="body2" color="text" textAlign="center" mb={3}>
-            Sélectionne un fichier Excel (.xlsx, .xls) pour mettre à jour ton stock.<br/>Le format peut être personnalisé grâce au formulaire de correspondance.
-          </VuiTypography>
-          <VuiButton color="info" variant="contained" startIcon={<FaFileImport />} onClick={handleImportClick}>
-            Importer Excel
-          </VuiButton>
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleFileChange}
-          />
-          {showMappingForm && (
-            <VuiBox mt={4} width="100%">
-              <VuiTypography variant="h6" color="info" fontWeight="bold" mb={2}>
-                Associe les colonnes de ton fichier aux champs requis :
-              </VuiTypography>
-              {/* Aperçu des colonnes détectées */}
-              <VuiBox mb={2} p={2} bgcolor="#2d1a2b" borderRadius={2}>
-                <VuiTypography variant="body2" color="white" fontWeight="bold" mb={1}>
-                  Colonnes détectées :
-                </VuiTypography>
-                <VuiTypography variant="body2" color="white">
-                  {excelColumns.join(' | ')}
+    <DashboardLayout>
+      <DashboardNavbar />
+      <VuiBox display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="80vh">
+        <VuiTypography variant="h3" color="info" fontWeight="bold" mb={4}>
+          Importer / Exporter le stock
+        </VuiTypography>
+        <VuiBox display="flex" flexDirection={{ xs: "column", md: "row" }} justifyContent="center" alignItems="stretch" width="100%" maxWidth={900} gap={4}>
+          {/* Carte Import */}
+          <Card sx={{ flex: 1, bgcolor: "rgba(44, 20, 34, 0.85)", borderRadius: 3, boxShadow: '0 8px 32px 0 #ff4fa340', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+            {/* Message de succès global */}
+            {importStatus && importStatus.type === 'success' && (
+              <VuiBox position="absolute" top={12} left={0} width="100%" zIndex={10} display="flex" justifyContent="center">
+                <VuiTypography color="success.main" fontWeight="bold" bgcolor="#e6fff2" borderRadius={2} px={3} py={1} boxShadow="0 2px 8px #1ed76022">
+                  {importStatus.msg}
                 </VuiTypography>
               </VuiBox>
-              <form onSubmit={handleMappingSubmit}>
-                {REQUIRED_FIELDS.map((field) => (
-                  <VuiBox key={field.key} mb={2}>
-                    <VuiTypography variant="body2" color="info" fontWeight="bold" mb={0.5}>
-                      {field.label + " (choisir une colonne)"}
-                    </VuiTypography>
-                    <FormControl fullWidth sx={{ bgcolor: '#fff', borderRadius: 2, p: 1.5 }} variant="outlined">
-                      <Select
-                        value={mapping[field.key] || ""}
-                        onChange={(e) => handleMappingChange(field.key, e.target.value)}
-                        required
-                        displayEmpty
-                        fullWidth
-                        MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
-                      >
-                        <MenuItem value="" disabled>
-                          <em>Sélectionner...</em>
-                        </MenuItem>
-                        {excelColumns.map((col, idx) => (
-                          <MenuItem value={col} key={idx}>{col}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </VuiBox>
-                ))}
-                <VuiButton color="info" variant="contained" type="submit" fullWidth>
-                  Valider le mapping
-                </VuiButton>
-              </form>
-            </VuiBox>
-          )}
-        </Card>
-        {/* Carte Export */}
-        <Card sx={{ flex: 1, bgcolor: "rgba(44, 20, 34, 0.85)", borderRadius: 3, boxShadow: '0 8px 32px 0 #ff4fa340', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <VuiTypography variant="h5" color="info" fontWeight="bold" mb={2}>
-            Exporter le stock
-          </VuiTypography>
-          <VuiTypography variant="body2" color="text" textAlign="center" mb={3}>
-            Télécharge un fichier CSV contenant l'état actuel de ton stock.<br/>Idéal pour sauvegarder ou utiliser dans d'autres outils.
-          </VuiTypography>
-          <VuiButton color="info" variant="outlined" startIcon={<FaFileExport />} onClick={handleExport}>
-            Exporter CSV
-          </VuiButton>
-        </Card>
+            )}
+            <VuiTypography variant="h5" color="info" fontWeight="bold" mb={2}>
+              Importer le stock
+            </VuiTypography>
+            <VuiTypography variant="body2" color="text" textAlign="center" mb={3}>
+              Sélectionne un fichier Excel (.xlsx, .xls) pour mettre à jour ton stock.<br/>Le format peut être personnalisé grâce au formulaire de correspondance.
+            </VuiTypography>
+            <VuiButton color="info" variant="contained" startIcon={<FaFileImport />} onClick={handleImportClick}>
+              Importer Excel
+            </VuiButton>
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
+            {showMappingForm && (
+              <VuiBox mt={4} width="100%">
+                <VuiTypography variant="h6" color="info" fontWeight="bold" mb={2}>
+                  Associe les colonnes de ton fichier aux champs requis :
+                </VuiTypography>
+                {/* Aperçu des colonnes détectées */}
+                <VuiBox mb={2} p={2} bgcolor="#2d1a2b" borderRadius={2}>
+                  <VuiTypography variant="body2" color="white" fontWeight="bold" mb={1}>
+                    Colonnes détectées :
+                  </VuiTypography>
+                  <VuiTypography variant="body2" color="white">
+                    {excelColumns.join(' | ')}
+                  </VuiTypography>
+                </VuiBox>
+                <form onSubmit={handleMappingSubmit}>
+                  {REQUIRED_FIELDS.map((field) => (
+                    <VuiBox key={field.key} mb={2}>
+                      <VuiTypography variant="body2" color="info" fontWeight="bold" mb={0.5}>
+                        {field.label + " (choisir une colonne)"}
+                      </VuiTypography>
+                      <FormControl fullWidth sx={{ bgcolor: '#fff', borderRadius: 2, p: 1.5 }} variant="outlined">
+                        <Select
+                          value={mapping[field.key] || ""}
+                          onChange={(e) => handleMappingChange(field.key, e.target.value)}
+                          required
+                          displayEmpty
+                          fullWidth
+                          MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
+                        >
+                          <MenuItem value="" disabled>
+                            <em>Sélectionner...</em>
+                          </MenuItem>
+                          {excelColumns.map((col, idx) => (
+                            <MenuItem value={col} key={idx}>{col}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </VuiBox>
+                  ))}
+                  <VuiButton color="info" variant="contained" type="submit" fullWidth>
+                    Valider le mapping
+                  </VuiButton>
+                </form>
+              </VuiBox>
+            )}
+          </Card>
+          {/* Carte Export */}
+          <Card sx={{ flex: 1, bgcolor: "rgba(44, 20, 34, 0.85)", borderRadius: 3, boxShadow: '0 8px 32px 0 #ff4fa340', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <VuiTypography variant="h5" color="info" fontWeight="bold" mb={2}>
+              Exporter le stock
+            </VuiTypography>
+            <VuiTypography variant="body2" color="text" textAlign="center" mb={3}>
+              Télécharge un fichier CSV contenant l'état actuel de ton stock.<br/>Idéal pour sauvegarder ou utiliser dans d'autres outils.
+            </VuiTypography>
+            <VuiButton color="info" variant="outlined" startIcon={<FaFileExport />} onClick={handleExport}>
+              Exporter CSV
+            </VuiButton>
+          </Card>
+        </VuiBox>
       </VuiBox>
-    </VuiBox>
+      <Footer />
+    </DashboardLayout>
   );
 } 

@@ -40,51 +40,57 @@ import colors from "assets/theme/base/colors";
 import typography from "assets/theme/base/typography";
 import borders from "assets/theme/base/borders";
 
-function Table({ columns, rows }) {
+function Table({ columns, rows, selectedItems = [], toggleSelectItem, selectAll, handleSort, sortConfig }) {
   const { grey, light } = colors;
   const { size, fontWeightBold } = typography;
   const { borderWidth } = borders;
 
   const safeColumns = Array.isArray(columns) ? columns : [];
   const safeRows = Array.isArray(rows) ? rows : [];
-  const renderColumns = safeColumns.map(({ name, align, width }, key) => {
-    let pl;
-    let pr;
 
-    if (key === 0) {
-      pl = 3;
-      pr = 3;
-    } else if (safeColumns.length > 0 && key === safeColumns.length - 1) {
-      pl = 3;
-      pr = 3;
-    } else {
-      pl = 1;
-      pr = 1;
-    }
-
-    return (
-      <VuiBox
-        key={name}
-        component="th"
-        width={width || "auto"}
-        pt={1.5}
-        pb={1.25}
-        pl={align === "left" ? pl : 3}
-        pr={align === "right" ? pr : 3}
-        textAlign={align}
-        fontSize={size.xxs}
-        fontWeight={fontWeightBold}
-        color="text"
-        opacity={0.7}
-        borderBottom={`${borderWidth[1]} solid ${grey[700]}`}
-      >
-        {typeof name === "string" ? name.toUpperCase() : ""}
-      </VuiBox>
-    );
-  });
+  // Ajoute la colonne de sélection en début de tableau
+  const renderColumns = [
+    <VuiBox key="select-header" component="th" pt={1.5} pb={1.25} pl={3} pr={1} textAlign="center" fontSize={size.xxs} fontWeight={fontWeightBold} color="text" opacity={0.7} borderBottom={`${borderWidth[1]} solid ${grey[700]}`}> 
+      <input type="checkbox" checked={selectedItems.length === rows.length && rows.length > 0} onChange={selectAll} style={{ accentColor: '#ff4fa3' }} />
+    </VuiBox>,
+    ...safeColumns.map(({ name, align, width }, key) => {
+      let pl;
+      let pr;
+      if (key === 0) { pl = 3; pr = 3; }
+      else if (safeColumns.length > 0 && key === safeColumns.length - 1) { pl = 3; pr = 3; }
+      else { pl = 1; pr = 1; }
+      const isSorted = sortConfig && sortConfig.key === name;
+      return (
+        <VuiBox
+          key={name}
+          component="th"
+          width={width || "auto"}
+          pt={1.5}
+          pb={1.25}
+          pl={align === "left" ? pl : 3}
+          pr={align === "right" ? pr : 3}
+          textAlign={align}
+          fontSize={size.xxs}
+          fontWeight={fontWeightBold}
+          color="text"
+          opacity={0.7}
+          borderBottom={`${borderWidth[1]} solid ${grey[700]}`}
+          sx={{ cursor: 'pointer', userSelect: 'none' }}
+          onClick={() => handleSort && handleSort(name)}
+        >
+          {typeof name === "string" ? name.toUpperCase() : ""}
+          {isSorted && (
+            <span style={{ marginLeft: 6, fontSize: 13, color: '#ff4fa3' }}>{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>
+          )}
+        </VuiBox>
+      );
+    })
+  ];
 
   const renderRows = safeRows.map((row, key) => {
     const rowKey = `row-${key}`;
+    const id = row.id || row.nom || key;
+    const checked = selectedItems.includes(id);
 
     const tableRow = safeColumns.map(({ name, align }) => {
       let template;
@@ -137,7 +143,14 @@ function Table({ columns, rows }) {
       return template;
     });
 
-    return <TableRow key={rowKey}>{tableRow}</TableRow>;
+    return (
+      <TableRow key={rowKey}>
+        <VuiBox component="td" p={1} textAlign="center">
+          <input type="checkbox" checked={checked} onChange={() => toggleSelectItem(id)} style={{ accentColor: checked ? '#ff4fa3' : '#ff8cce' }} />
+        </VuiBox>
+        {tableRow}
+      </TableRow>
+    );
   });
 
   return useMemo(
@@ -151,7 +164,7 @@ function Table({ columns, rows }) {
         </MuiTable>
       </TableContainer>
     ),
-    [columns, rows]
+    [columns, rows, selectedItems, toggleSelectItem, selectAll, handleSort, sortConfig]
   );
 }
 
@@ -159,12 +172,22 @@ function Table({ columns, rows }) {
 Table.defaultProps = {
   columns: [],
   rows: [{}],
+  selectedItems: [],
+  toggleSelectItem: () => {},
+  selectAll: () => {},
+  handleSort: () => {},
+  sortConfig: {},
 };
 
 // Typechecking props for the Table
 Table.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object),
   rows: PropTypes.arrayOf(PropTypes.object),
+  selectedItems: PropTypes.arrayOf(PropTypes.string),
+  toggleSelectItem: PropTypes.func,
+  selectAll: PropTypes.func,
+  handleSort: PropTypes.func,
+  sortConfig: PropTypes.object,
 };
 
 export default Table;

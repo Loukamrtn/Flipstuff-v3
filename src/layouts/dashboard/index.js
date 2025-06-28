@@ -144,11 +144,19 @@ function Dashboard() {
     return new Date(dateStr);
   }
 
-  // Générer les 12 derniers mois (y compris le mois en cours)
-  const nowDate = new Date();
+  // Trouver le mois le plus récent dans les données (achat ou vente)
+  let maxDate = null;
+  stocks.forEach(item => {
+    const dates = [item.date_achat, item.date_vente].filter(Boolean).map(parseDateFR);
+    dates.forEach(d => {
+      if (d && !isNaN(d) && (!maxDate || d > maxDate)) maxDate = d;
+    });
+  });
+  const refDate = maxDate || new Date();
+  // Générer les 12 mois jusqu'au mois le plus récent
   const last12Months = [];
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
+    const d = new Date(refDate.getFullYear(), refDate.getMonth() - i, 1);
     last12Months.push({
       label: d.toLocaleString('fr-FR', { month: 'short' }),
       year: d.getFullYear(),
@@ -229,10 +237,18 @@ function Dashboard() {
     colors: ["#ff4fa3", "#e7125d"],
   };
 
-  // --- Calculs pour la carte de droite ---
-  // Bar chart : nombre de ventes par mois sur les 12 derniers mois
+  // Calcul du nombre d'achats et de ventes par mois (exactement comme le line chart)
+  const achatsParMois = Array(12).fill(0);
   const ventesParMois = Array(12).fill(0);
   stocks.forEach(item => {
+    if (item.date_achat) {
+      const d = parseDateFR(item.date_achat);
+      last12Months.forEach((m, idx) => {
+        if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month) {
+          achatsParMois[idx]++;
+        }
+      });
+    }
     if (item.date_vente) {
       const d = parseDateFR(item.date_vente);
       last12Months.forEach((m, idx) => {
@@ -246,6 +262,10 @@ function Dashboard() {
     {
       name: "Ventes",
       data: ventesParMois,
+    },
+    {
+      name: "Achats",
+      data: achatsParMois,
     },
   ];
   const barChartOptionsUser = {
@@ -265,22 +285,14 @@ function Dashboard() {
     },
     grid: { strokeDashArray: 5, borderColor: "#56577A" },
     fill: {
-      type: "gradient",
-      gradient: {
-        shade: "dark",
-        type: "vertical",
-        shadeIntensity: 0.5,
-        gradientToColors: ["#ff4fa3"],
-        inverseColors: false,
-        opacityFrom: 0.8,
-        opacityTo: 0.3,
-        stops: [0, 100],
-      },
+      type: "solid",
+      colors: ["#ff4fa3", "#a259ff"],
     },
+    colors: ["#ff4fa3", "#a259ff"],
     plotOptions: {
       bar: {
         borderRadius: 6,
-        columnWidth: "40%",
+        columnWidth: "32%",
         dataLabels: { position: "top" },
       },
     },
@@ -375,8 +387,8 @@ function Dashboard() {
               <MiniStatisticsCard
                 title={{ text: "Profit total", fontWeight: "regular" }}
                 count={loading ? "..." : `${totalProfit} €`}
-                percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${profitThisMonth} €` }}
-                icon={{ color: "info", component: <FaEuroSign size="22px" color="info" /> }}
+                percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${profitThisMonth.toFixed(2)} €` }}
+                icon={{ color: "info", component: <FaEuroSign size="22px" color="white" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
@@ -384,7 +396,7 @@ function Dashboard() {
                 title={{ text: "Achats", fontWeight: "regular" }}
                 count={loading ? "..." : totalPurchases}
                 percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${purchasesThisMonth}` }}
-                icon={{ color: "info", component: <FaShoppingBag size="22px" color="info" /> }}
+                icon={{ color: "info", component: <FaShoppingBag size="22px" color="white" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
@@ -392,7 +404,7 @@ function Dashboard() {
                 title={{ text: "Ventes", fontWeight: "regular" }}
                 count={loading ? "..." : totalSales}
                 percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${salesThisMonth}` }}
-                icon={{ color: "info", component: <FaCheckCircle size="22px" color="info" /> }}
+                icon={{ color: "info", component: <FaCheckCircle size="22px" color="white" /> }}
               />
             </Grid>
             <Grid item xs={12} md={6} xl={3}>
@@ -400,7 +412,7 @@ function Dashboard() {
                 title={{ text: "En stock", fontWeight: "regular" }}
                 count={loading ? "..." : itemsInStock}
                 percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${stockThisMonth}` }}
-                icon={{ color: "info", component: <FaBoxes size="22px" color="info" /> }}
+                icon={{ color: "info", component: <FaBoxes size="22px" color="white" /> }}
               />
             </Grid>
           </Grid>
@@ -467,6 +479,7 @@ function Dashboard() {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
+                alignItems: 'stretch',
               }}>
                 <VuiBox mb="24px" height="220px">
                   <BarChart
@@ -474,6 +487,7 @@ function Dashboard() {
                     barChartOptions={barChartOptionsUser}
                   />
                 </VuiBox>
+                {/* Stats sobres et alignées */}
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
                   <Grid item xs={12} md={6}>
                     <Box display="flex" alignItems="center" gap={2} mb={2}>
@@ -489,7 +503,7 @@ function Dashboard() {
                           boxShadow: "0 4px 16px 0 #ff4fa355",
                         }}
                       >
-                        <FaEuroSign color="#fff" size="22px" />
+                        <FaEuroSign color="white" size="22px" />
                       </Box>
                       <Box>
                         <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
@@ -508,14 +522,14 @@ function Dashboard() {
                         justifyContent="center"
                         alignItems="center"
                         sx={{
-                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          background: "linear-gradient(135deg, #a259ff 0%, #442536 100%)",
                           borderRadius: "50%",
                           width: "52px",
                           height: "52px",
-                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                          boxShadow: "0 4px 16px 0 #a259ff55",
                         }}
                       >
-                        <FaShoppingBag color="#fff" size="22px" />
+                        <FaShoppingBag color="white" size="22px" />
                       </Box>
                       <Box>
                         <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
@@ -541,7 +555,7 @@ function Dashboard() {
                           boxShadow: "0 4px 16px 0 #ff4fa355",
                         }}
                       >
-                        <FaBoxes color="#fff" size="22px" />
+                        <FaBoxes color="white" size="22px" />
                       </Box>
                       <Box>
                         <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
@@ -563,14 +577,14 @@ function Dashboard() {
                         justifyContent="center"
                         alignItems="center"
                         sx={{
-                          background: "linear-gradient(135deg, #ff4fa3 0%, #442536 100%)",
+                          background: "linear-gradient(135deg, #a259ff 0%, #442536 100%)",
                           borderRadius: "50%",
                           width: "52px",
                           height: "52px",
-                          boxShadow: "0 4px 16px 0 #ff4fa355",
+                          boxShadow: "0 4px 16px 0 #a259ff55",
                         }}
                       >
-                        <FaCheckCircle color="#fff" size="22px" />
+                        <FaCheckCircle color="white" size="22px" />
                       </Box>
                       <Box>
                         <VuiTypography variant="caption" sx={{ color: '#fff', fontSize: '0.95rem', opacity: 0.85 }} fontWeight="regular" mb={0.5}>
