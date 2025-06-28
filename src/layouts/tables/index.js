@@ -478,7 +478,7 @@ function Stock() {
                   '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
                 }}
               >
-                🔲
+                📜
               </ToggleButton>
             </ToggleButtonGroup>
             <ToggleButtonGroup value={filter} exclusive onChange={(_, v) => v && setFilter(v)} sx={{ ml: 2 }}>

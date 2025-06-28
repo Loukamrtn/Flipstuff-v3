@@ -41,6 +41,9 @@ import AdobeXD from "examples/Icons/AdobeXD";
 // Vision UI Dashboard theme imports
 import palette from "assets/theme/base/colors";
 
+// Utilitaire pour arrondir à deux décimales
+function to2(n) { return Number(n).toFixed(2); }
+
 const OrdersOverview = memo(function OrdersOverview({ stocks, derniersAjouts }) {
   const loading = !stocks || !derniersAjouts;
 
@@ -91,7 +94,7 @@ const OrdersOverview = memo(function OrdersOverview({ stocks, derniersAjouts }) 
                     <FaShoppingCart size="18px" color="#ff4fa3" />
                   </Box>
                   <VuiTypography color="white" fontWeight="bold" fontSize="1.01rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>{item.nom}</VuiTypography>
-                  <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_achat ? `${item.prix_achat} €` : '-'}</VuiTypography>
+                  <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_achat ? `${to2(item.prix_achat)} €` : '-'}</VuiTypography>
                   <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 90, textAlign: 'right' }}>{item.date_achat ? new Date(item.date_achat).toLocaleDateString() : '-'}</VuiTypography>
                 </VuiBox>
               ))}

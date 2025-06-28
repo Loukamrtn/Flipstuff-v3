@@ -36,6 +36,9 @@ import Table from "examples/Tables/Table";
 // Data
 import data from "layouts/dashboard/components/Projects/data";
 
+// Utilitaire pour arrondir à deux décimales
+function to2(n) { return Number(n).toFixed(2); }
+
 const Projects = memo(function Projects({ ventesMois }) {
   const loading = ventesMois === undefined;
   return (
@@ -68,7 +71,7 @@ const Projects = memo(function Projects({ ventesMois }) {
             >
               <FaCheckCircle size="18px" color="#1ed760" style={{ minWidth: 18, marginRight: 8 }} />
               <VuiTypography color="white" fontWeight="bold" fontSize="1.01rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>{item.nom}</VuiTypography>
-              <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_vente ? `${item.prix_vente} €` : '-'}</VuiTypography>
+              <VuiTypography color="text" fontSize="0.98rem" sx={{ minWidth: 80, textAlign: 'right', pr: 1 }}>{item.prix_vente ? `${to2(item.prix_vente)} €` : '-'}</VuiTypography>
               <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 90, textAlign: 'right' }}>{item.date_vente ? new Date(item.date_vente).toLocaleDateString() : '-'}</VuiTypography>
               <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 80, textAlign: 'right', opacity: 0.8 }}>{item.plateforme || '-'}</VuiTypography>
             </VuiBox>

@@ -64,6 +64,9 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../../supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 
+// Utilitaire pour arrondir à deux décimales
+function to2(n) { return Number(n).toFixed(2); }
+
 function Dashboard() {
   const { gradients } = colors;
   const { cardContent } = gradients;
@@ -188,14 +191,17 @@ function Dashboard() {
     }
   });
 
+  // Arrondi les valeurs des datasets à deux décimales
+  const depensesParMoisArr = depensesParMois.map(to2);
+  const caParMoisArr = caParMois.map(to2);
   const lineChartData = [
     {
       name: "Dépenses",
-      data: depensesParMois,
+      data: depensesParMoisArr,
     },
     {
       name: "Chiffre d'affaires",
-      data: caParMois,
+      data: caParMoisArr,
     },
   ];
   const lineChartOptions = {
@@ -386,8 +392,8 @@ function Dashboard() {
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
                 title={{ text: "Profit total", fontWeight: "regular" }}
-                count={loading ? "..." : `${totalProfit} €`}
-                percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${profitThisMonth.toFixed(2)} €` }}
+                count={loading ? "..." : `${to2(totalProfit)} €`}
+                percentage={{ color: "success", text: loading ? "..." : `Ce mois-ci : ${to2(profitThisMonth)} €` }}
                 icon={{ color: "info", component: <FaEuroSign size="22px" color="white" /> }}
               />
             </Grid>
@@ -510,7 +516,7 @@ function Dashboard() {
                           Bénéfice Moyen
                         </VuiTypography>
                         <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
-                          {loading ? "..." : `${benefMoyen} €`}
+                          {loading ? "..." : `${to2(benefMoyen)} €`}
                         </VuiTypography>
                       </Box>
                     </Box>
@@ -536,7 +542,7 @@ function Dashboard() {
                           Délai Moyen
                         </VuiTypography>
                         <VuiTypography variant="h3" sx={{ color: '#fff', fontSize: '1.2rem' }} fontWeight="bold">
-                          {loading ? "..." : `${delaiMoyen} j`}
+                          {loading ? "..." : `${to2(delaiMoyen)} j`}
                         </VuiTypography>
                       </Box>
                     </Box>
