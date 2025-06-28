@@ -17,10 +17,6 @@
 */
 
 // @mui material components
-// @mui icons
-import FacebookIcon from "@mui/icons-material/Facebook";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import TwitterIcon from "@mui/icons-material/Twitter";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import team1 from "assets/images/avatar1.png";
@@ -49,9 +45,6 @@ import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../supabaseClient";
 import { useState } from "react";
 import { Avatar, Button, Typography, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, IconButton, InputAdornment, Divider } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const providerLabel = {
   google: "Google",

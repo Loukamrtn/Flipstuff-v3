@@ -55,6 +55,7 @@ import ResetPassword from "layouts/authentication/reset-password";
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Profile from "layouts/profile";
+import StockImportExport from "layouts/stock-import-export";
 import { PrivateRoute, PublicRoute } from "./ProtectedRoutes";
 import AuthCallback from "./AuthCallback";
 import colors from "assets/theme/base/colors";
@@ -158,6 +159,7 @@ export default function App() {
           <PrivateRoute path="/dashboard" component={Dashboard} />
           <PrivateRoute path="/tables" component={Tables} />
           <PrivateRoute path="/profile" component={Profile} />
+          <PrivateRoute path="/stock-import-export" component={StockImportExport} />
           <Redirect from="*" to="/dashboard" />
         </Switch>
       </ThemeProvider>

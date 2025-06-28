@@ -21,6 +21,7 @@ import { supabase } from '../../../supabaseClient';
 import { Link } from "react-router-dom";
 import googleLogo from '../../../assets/images/small-logos/logo-google.svg';
 import discordLogo from '../../../assets/images/small-logos/logo-discord.svg';
+import flipstuffLogo from '../../../assets/images/logos/Flipstuff.png';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -62,6 +63,11 @@ export default function SignIn() {
         alignItems: 'center',
         border: '1.5px solid #ff4fa3',
       }}>
+        <img
+          src={flipstuffLogo}
+          alt="Logo Flipstuff"
+          style={{ width: 160, marginBottom: 18, marginTop: 8, display: 'block' }}
+        />
         <h1 style={{
           color: '#ff4fa3',
           fontWeight: 900,
