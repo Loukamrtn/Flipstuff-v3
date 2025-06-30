@@ -16,38 +16,19 @@
 
 */
 
-import React, { Component } from "react";
+import React from "react";
 import Chart from "react-apexcharts";
 
-class BarChart extends Component {
-  constructor(props) {
-    super(props);
-    const { barChartData = [], barChartOptions = {} } = props;
-    this.state = {
-      chartData: Array.isArray(barChartData) ? barChartData : [],
-      chartOptions: barChartOptions || {},
-    };
-  }
-
-  componentDidMount() {
-    const { barChartData = [], barChartOptions = {} } = this.props;
-    this.setState({
-      chartData: Array.isArray(barChartData) ? barChartData : [],
-      chartOptions: barChartOptions || {},
-    });
-  }
-
-  render() {
-    return (
-      <Chart
-        options={this.state.chartOptions}
-        series={this.state.chartData}
-        type="bar"
-        width="100%"
-        height="100%"
-      />
-    );
-  }
+function BarChart({ barChartData = [], barChartOptions = {} }) {
+  return (
+    <Chart
+      options={barChartOptions}
+      series={barChartData}
+      type="bar"
+      width="100%"
+      height="100%"
+    />
+  );
 }
 
 export default BarChart;

@@ -74,6 +74,7 @@ function Dashboard() {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [moisAffiches, setMoisAffiches] = useState(6); // 6 par défaut
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -147,34 +148,42 @@ function Dashboard() {
     return new Date(dateStr);
   }
 
-  // Trouver le mois le plus récent dans les données (achat ou vente)
-  let maxDate = null;
+  // Trouver le mois le plus ancien et le plus récent dans les données (achat ou vente)
+  let minDate = null, maxDate = null;
   stocks.forEach(item => {
     const dates = [item.date_achat, item.date_vente].filter(Boolean).map(parseDateFR);
     dates.forEach(d => {
-      if (d && !isNaN(d) && (!maxDate || d > maxDate)) maxDate = d;
+      if (d && !isNaN(d)) {
+        if (!minDate || d < minDate) minDate = d;
+        if (!maxDate || d > maxDate) maxDate = d;
+      }
     });
   });
-  const refDate = maxDate || new Date();
-  // Générer les 12 mois jusqu'au mois le plus récent
-  const last12Months = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(refDate.getFullYear(), refDate.getMonth() - i, 1);
-    last12Months.push({
+  // Limite basse à janvier 2018
+  const minAllowedDate = new Date(2018, 0, 1);
+  if (!minDate || minDate < minAllowedDate) minDate = minAllowedDate;
+  if (!maxDate) maxDate = new Date();
+  // Générer tous les mois entre minDate et maxDate
+  const allMonths = [];
+  let d = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  const end = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+  while (d <= end) {
+    allMonths.push({
       label: d.toLocaleString('fr-FR', { month: 'short' }),
       year: d.getFullYear(),
       month: d.getMonth(),
     });
+    d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
   }
 
-  // Calcul des dépenses et CA pour les 12 derniers mois
-  const depensesParMois = Array(12).fill(0);
-  const caParMois = Array(12).fill(0);
+  // Calcul des dépenses et CA pour tous les mois
+  const depensesParMois = Array(allMonths.length).fill(0);
+  const caParMois = Array(allMonths.length).fill(0);
   stocks.forEach(item => {
     if (item.date_achat && item.prix_achat) {
       const d = parseDateFR(item.date_achat);
       const montant = Number(item.prix_achat);
-      last12Months.forEach((m, idx) => {
+      allMonths.forEach((m, idx) => {
         if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month && !isNaN(montant)) {
           depensesParMois[idx] += montant;
         }
@@ -183,14 +192,13 @@ function Dashboard() {
     if (item.date_vente && item.prix_vente) {
       const d = parseDateFR(item.date_vente);
       const montant = Number(item.prix_vente);
-      last12Months.forEach((m, idx) => {
+      allMonths.forEach((m, idx) => {
         if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month && !isNaN(montant)) {
           caParMois[idx] += montant;
         }
       });
     }
   });
-
   // Arrondi les valeurs des datasets à deux décimales
   const depensesParMoisArr = depensesParMois.map(to2);
   const caParMoisArr = caParMois.map(to2);
@@ -206,7 +214,25 @@ function Dashboard() {
   ];
   const lineChartOptions = {
     chart: { toolbar: { show: false } },
-    tooltip: { theme: "dark" },
+    tooltip: {
+      theme: "dark",
+      style: {
+        fontSize: "13px",
+        fontFamily: "Plus Jakarta Display, Arial, sans-serif",
+        color: "#fff",
+      },
+      custom: function({ series, dataPointIndex, w }) {
+        const depenses = series[0][dataPointIndex];
+        const ca = series[1][dataPointIndex];
+        const benef = (ca - depenses);
+        const benefColor = benef >= 0 ? '#1ed760' : '#e7125d';
+        return `<div style=\"background: linear-gradient(135deg, #ff4fa3 0%, #a259ff 100%); color: #fff; border-radius: 12px; box-shadow: 0 4px 24px #ff4fa355; padding: 12px 20px; font-weight: bold; font-size: 1.08rem; font-family: 'Plus Jakarta Display', Arial, sans-serif; letter-spacing: 0.01em; min-width: 180px; text-align: left;\">
+          <div style='margin-bottom: 2px;'>Dépenses : <span style='font-weight:700;'>${depenses % 1 === 0 ? depenses : depenses.toFixed(2)}</span></div>
+          <div style='margin-bottom: 2px;'>Chiffre d'affaires : <span style='font-weight:700;'>${ca % 1 === 0 ? ca : ca.toFixed(2)}</span></div>
+          <div style='margin-bottom: 2px;'>Bénéfice : <span style='font-weight:700; color:${benefColor};'>${benef % 1 === 0 ? benef : benef.toFixed(2)} €</span></div>
+        </div>`;
+      },
+    },
     dataLabels: {
       enabled: false,
     },
@@ -214,13 +240,17 @@ function Dashboard() {
     markers: { size: 0 },
     xaxis: {
       type: "category",
-      categories: last12Months.map(m => m.label + ' ' + m.year.toString().slice(-2)),
+      categories: allMonths.map(m => m.label + ' ' + m.year.toString().slice(-2)),
       labels: { style: { colors: "#c8cfca", fontSize: "10px" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
+      range: 6, // Zoom initial sur les 6 derniers mois
     },
     yaxis: {
-      labels: { style: { colors: "#c8cfca", fontSize: "10px" } },
+      labels: {
+        style: { colors: "#c8cfca", fontSize: "10px" },
+        formatter: val => val % 1 === 0 ? val.toString() : val.toFixed(0),
+      },
       min: 0,
       tickAmount: 5,
     },
@@ -244,12 +274,12 @@ function Dashboard() {
   };
 
   // Calcul du nombre d'achats et de ventes par mois (exactement comme le line chart)
-  const achatsParMois = Array(12).fill(0);
-  const ventesParMois = Array(12).fill(0);
+  const achatsParMois = Array(allMonths.length).fill(0);
+  const ventesParMois = Array(allMonths.length).fill(0);
   stocks.forEach(item => {
     if (item.date_achat) {
       const d = parseDateFR(item.date_achat);
-      last12Months.forEach((m, idx) => {
+      allMonths.forEach((m, idx) => {
         if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month) {
           achatsParMois[idx]++;
         }
@@ -257,48 +287,81 @@ function Dashboard() {
     }
     if (item.date_vente) {
       const d = parseDateFR(item.date_vente);
-      last12Months.forEach((m, idx) => {
+      allMonths.forEach((m, idx) => {
         if (d && !isNaN(d) && d.getFullYear() === m.year && d.getMonth() === m.month) {
           ventesParMois[idx]++;
         }
       });
     }
   });
+  // Limiter à 12 derniers mois pour le bar chart
+  const last12Months = allMonths.slice(-12);
+  const depensesLast12 = depensesParMoisArr.slice(-12);
+  const caLast12 = caParMoisArr.slice(-12);
+
   const barChartDataUser = [
     {
       name: "Ventes",
-      data: ventesParMois,
+      data: ventesParMois.slice(-12),
     },
     {
       name: "Achats",
-      data: achatsParMois,
+      data: achatsParMois.slice(-12),
     },
   ];
   const barChartOptionsUser = {
     chart: { toolbar: { show: false } },
-    tooltip: { theme: "dark" },
+    tooltip: {
+      theme: "dark",
+      style: {
+        fontSize: "13px",
+        fontFamily: "Plus Jakarta Display, Arial, sans-serif",
+        color: "#fff",
+      },
+      custom: function({ series, dataPointIndex, w }) {
+        const mois = w.config.xaxis.categories[dataPointIndex];
+        const ventes = series[0][dataPointIndex];
+        const achats = series[1][dataPointIndex];
+        return `<div style=\"background: linear-gradient(135deg, #ff4fa3 0%, #a259ff 100%); color: #fff; border-radius: 12px; box-shadow: 0 4px 24px #ff4fa355; padding: 12px 20px; font-weight: bold; font-size: 1.08rem; font-family: 'Plus Jakarta Display', Arial, sans-serif; letter-spacing: 0.01em; min-width: 180px; text-align: left;\">
+          <div style='margin-bottom: 2px;'>Ventes : <span style='font-weight:700;'>${ventes % 1 === 0 ? ventes : ventes.toFixed(2)}</span></div>
+          <div style='margin-bottom: 8px;'>Achats : <span style='font-weight:700;'>${achats % 1 === 0 ? achats : achats.toFixed(2)}</span></div>
+          <div style='font-size:1.01em; font-weight:400; margin-top: 6px; letter-spacing:0.01em;'>${mois}</div>
+        </div>`;
+      },
+    },
     xaxis: {
       type: "category",
       categories: last12Months.map(m => m.label + ' ' + m.year.toString().slice(-2)),
-      labels: { style: { colors: "#c8cfca", fontSize: "9px" } },
+      labels: {
+        style: { colors: "#c8cfca", fontSize: "10px" },
+        rotate: -35,
+        rotateAlways: true,
+        hideOverlappingLabels: true,
+        trim: true,
+        maxHeight: 60,
+      },
       axisBorder: { show: false },
       axisTicks: { show: false },
+      range: 12,
     },
     yaxis: {
-      labels: { style: { colors: "#c8cfca", fontSize: "9px" } },
+      labels: {
+        style: { colors: "#c8cfca", fontSize: "10px" },
+        formatter: val => val % 1 === 0 ? val.toString() : val.toFixed(0),
+      },
       min: 0,
-      tickAmount: 3,
+      tickAmount: 5,
     },
     grid: { strokeDashArray: 5, borderColor: "#56577A" },
     fill: {
       type: "solid",
-      colors: ["#ff4fa3", "#a259ff"],
+      colors: ["#ff4fa3", "#e7125d"],
     },
-    colors: ["#ff4fa3", "#a259ff"],
+    colors: ["#ff4fa3", "#e7125d"],
     plotOptions: {
       bar: {
         borderRadius: 6,
-        columnWidth: "32%",
+        columnWidth: "40%",
         dataLabels: { position: "top" },
       },
     },
@@ -311,7 +374,7 @@ function Dashboard() {
   stocks.forEach(item => {
     if (item.prix_vente && item.prix_achat && item.date_vente) {
       const d = parseDateFR(item.date_vente);
-      if (d && !isNaN(d) && d >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+      if (d && !isNaN(d) && d >= new Date(allMonths[0].year, allMonths[0].month, 1)) {
         totalBenef += Number(item.prix_vente) - Number(item.prix_achat);
         nbVentes++;
       }
@@ -325,7 +388,7 @@ function Dashboard() {
     if (item.date_achat && item.date_vente) {
       const dAchat = parseDateFR(item.date_achat);
       const dVente = parseDateFR(item.date_vente);
-      if (dAchat && dVente && !isNaN(dAchat) && !isNaN(dVente) && dVente >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+      if (dAchat && dVente && !isNaN(dAchat) && !isNaN(dVente) && dVente >= new Date(allMonths[0].year, allMonths[0].month, 1)) {
         totalDelai += Math.round((dVente - dAchat) / (1000 * 60 * 60 * 24));
         nbDelai++;
       }
@@ -347,7 +410,7 @@ function Dashboard() {
   stocks.forEach(item => {
     if (item.plateforme && item.date_vente) {
       const d = parseDateFR(item.date_vente);
-      if (d && !isNaN(d) && d >= new Date(last12Months[0].year, last12Months[0].month, 1)) {
+      if (d && !isNaN(d) && d >= new Date(allMonths[0].year, allMonths[0].month, 1)) {
         plateformes[item.plateforme] = (plateformes[item.plateforme] || 0) + 1;
       }
     }
