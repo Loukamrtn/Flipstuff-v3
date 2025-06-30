@@ -48,6 +48,7 @@ import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import ResetPassword from "layouts/authentication/reset-password";
 import StockImportExport from "layouts/stock-import-export";
+import AdminPage from "./layouts/admin";
 
 // Vision UI Dashboard React icons
 import { IoRocketSharp } from "react-icons/io5";
@@ -141,6 +142,22 @@ const routes = [
     icon: <FaBoxes size="15px" color="inherit" />,
     component: StockImportExport,
     noCollapse: true,
+  },
+  {
+    type: "title",
+    title: "Administration",
+    key: "admin-title",
+    adminOnly: true,
+  },
+  {
+    type: "collapse",
+    name: "Admin",
+    key: "admin",
+    route: "/admin",
+    icon: <IoRocketSharp size="15px" color="inherit" />,
+    component: AdminPage,
+    noCollapse: true,
+    adminOnly: true,
   },
 ];
 

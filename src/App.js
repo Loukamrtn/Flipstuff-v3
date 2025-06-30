@@ -60,6 +60,7 @@ import { PrivateRoute, PublicRoute } from "./ProtectedRoutes";
 import AuthCallback from "./AuthCallback";
 import colors from "assets/theme/base/colors";
 import linearGradient from "assets/theme/functions/linearGradient";
+import AdminPage from "layouts/admin";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -160,6 +161,7 @@ export default function App() {
           <PrivateRoute path="/tables" component={Tables} />
           <PrivateRoute path="/profile" component={Profile} />
           <PrivateRoute path="/stock-import-export" component={StockImportExport} />
+          <PrivateRoute path="/admin" component={AdminPage} adminOnly />
           <Redirect from="*" to="/dashboard" />
         </Switch>
       </ThemeProvider>

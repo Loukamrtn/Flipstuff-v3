@@ -16,7 +16,7 @@
 
 */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // react-router-dom components
 import { useLocation, NavLink } from "react-router-dom";
@@ -60,6 +60,7 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
   const { pathname } = location;
   const collapseName = pathname.split("/").slice(1)[0];
   const { user } = useAuth();
+  const [userRank, setUserRank] = useState(null);
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 
@@ -87,6 +88,19 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchRank = async () => {
+      if (!user) { setUserRank(null); return; }
+      const { data } = await supabase
+        .from('profile')
+        .select('rang')
+        .eq('id', user.id)
+        .single();
+      setUserRank(data?.rang || null);
+    };
+    fetchRank();
+  }, [user]);
+
   const iconColor = color === "primary" || color === "info" ? "accentGlow" : color;
 
   // On retire Profile de la liste principale pour l'afficher en bas
@@ -94,8 +108,16 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
     ? routes.filter(r => r.key !== "sign-in" && r.key !== "sign-up" && r.key !== "profile")
     : routes;
 
+  // Filtrage adminOnly
+  const filteredRoutesWithAdmin = filteredRoutes.filter(r => {
+    if (r.adminOnly) {
+      return userRank === "admin";
+    }
+    return true;
+  });
+
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
-  const renderRoutes = filteredRoutes.map(({ type, name, icon, title, noCollapse, key, route, href }) => {
+  const renderRoutes = filteredRoutesWithAdmin.map(({ type, name, icon, title, noCollapse, key, route, href }) => {
     let returnValue;
 
     if (type === "collapse") {

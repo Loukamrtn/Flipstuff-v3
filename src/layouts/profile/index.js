@@ -43,7 +43,7 @@ import Welcome from "../profile/components/Welcome/index";
 import CarInformations from "./components/CarInformations";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../supabaseClient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, Button, Typography, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, IconButton, InputAdornment, Divider } from "@mui/material";
 
 const providerLabel = {
@@ -69,6 +69,25 @@ export default function Profile() {
   const [passwordFeedback, setPasswordFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [userRank, setUserRank] = useState(null);
+  const [rankLoading, setRankLoading] = useState(true);
+  const [rankError, setRankError] = useState(null);
+
+  useEffect(() => {
+    const fetchRank = async () => {
+      if (!user) return;
+      setRankLoading(true);
+      const { data, error } = await supabase
+        .from('profile')
+        .select('rang')
+        .eq('id', user.id)
+        .single();
+      if (error) setRankError(error.message);
+      setUserRank(data?.rang || null);
+      setRankLoading(false);
+    };
+    fetchRank();
+  }, [user]);
 
   if (loading) {
     return <VuiBox display="flex" justifyContent="center" alignItems="center" minHeight="60vh"><CircularProgress /></VuiBox>;
@@ -159,7 +178,22 @@ export default function Profile() {
               gap: 2,
             }}>
               <Avatar src={avatarUrl} alt={displayName} sx={{ width: 100, height: 100, mb: 2, bgcolor: '#ff4fa3', color: '#fff', fontSize: 40, border: '4px solid #ff4fa3' }} />
-              <VuiTypography variant="h4" color="white" fontWeight="bold" mb={1} sx={{ letterSpacing: '0.01em' }}>{displayName}</VuiTypography>
+              <VuiTypography variant="h4" color="white" fontWeight="bold" mb={0.5} sx={{ letterSpacing: '0.01em', display: 'flex', alignItems: 'center', gap: 2 }}>
+                {displayName}
+                {rankLoading ? (
+                  <Box sx={{ ml: 1, minWidth: 80, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#ff4fa355', borderRadius: 2, px: 2 }}>
+                    <VuiTypography color="#ff4fa3" fontWeight={700} fontSize="1.01rem">...</VuiTypography>
+                  </Box>
+                ) : userRank ? (
+                  <Box sx={{ ml: 1, minWidth: 80, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: userRank === 'admin' ? '#ff4fa3' : userRank === 'premium' ? '#1ed760' : '#bfa2c8', borderRadius: 2, px: 2, boxShadow: '0 2px 8px 0 #ff4fa344' }}>
+                    <VuiTypography color="#fff" fontWeight={700} fontSize="1.01rem" sx={{ letterSpacing: '0.04em', textTransform: 'uppercase' }}>{userRank}</VuiTypography>
+                  </Box>
+                ) : rankError ? (
+                  <Box sx={{ ml: 1, minWidth: 80, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#e7125d', borderRadius: 2, px: 2 }}>
+                    <VuiTypography color="#fff" fontWeight={700} fontSize="1.01rem">Erreur</VuiTypography>
+                  </Box>
+                ) : null}
+              </VuiTypography>
               <VuiTypography variant="button" color="text" mb={1}>{user.email}</VuiTypography>
               <Divider sx={{ width: '100%', my: 2, bgcolor: '#ff4fa355' }} />
               <Box component="form" autoComplete="off" sx={{ width: '100%' }}>
