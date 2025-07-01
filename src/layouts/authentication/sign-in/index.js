@@ -33,13 +33,53 @@ export default function SignIn() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      if (error.message && error.message.includes('Invalid login credentials')) {
+        setError("Identifiants invalides. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('row-level security policy')) {
+        setError("Votre compte n'est pas autorisé à se connecter. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('banned')) {
+        setError("Votre compte a été banni. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else {
+        setError((error.message || "Erreur inconnue lors de la connexion.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      }
+      setLoading(false);
+      return;
+    }
+    // Récupérer l'IP et la stocker dans le profil
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const ipData = await res.json();
+      const userId = data.user?.id;
+      if (userId && ipData.ip) {
+        await supabase.from('profile').update({ ip_address: ipData.ip }).eq('id', userId);
+      }
+    } catch (e) { /* ignore erreur IP */ }
     setLoading(false);
+    window.location.href = '/dashboard';
+  };
+
+  // Ajout d'une fonction pour gérer la connexion OAuth et enregistrer l'IP
+  const handleOAuthLogin = async (provider) => {
+    setError(null);
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin + '/auth/callback' } });
     if (error) {
       setError(error.message);
-    } else {
-      window.location.href = '/dashboard';
+      setLoading(false);
+      return;
     }
+    // L'utilisateur sera redirigé, mais on tente d'enregistrer l'IP si possible
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const ipData = await res.json();
+      const userId = data.user?.id;
+      if (userId && ipData.ip) {
+        await supabase.from('profile').update({ ip_address: ipData.ip }).eq('id', userId);
+      }
+    } catch (e) { /* ignore erreur IP */ }
+    setLoading(false);
   };
 
   return (
@@ -80,7 +120,7 @@ export default function SignIn() {
         </p>
         <button
           type="button"
-          onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } })}
+          onClick={() => handleOAuthLogin('google')}
           style={{
             width: '100%',
             background: '#fff',
@@ -108,7 +148,7 @@ export default function SignIn() {
         </button>
         <button
           type="button"
-          onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin + '/auth/callback' } })}
+          onClick={() => handleOAuthLogin('discord')}
           style={{
             width: '100%',
             background: '#5865F2',

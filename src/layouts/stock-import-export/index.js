@@ -60,6 +60,16 @@ export default function StockImportExport() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Vérification du type de fichier
+      if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        setImportStatus({ type: 'error', msg: "Seuls les fichiers Excel (.xlsx, .xls) sont acceptés." });
+        return;
+      }
+      // Limite de taille (2 Mo)
+      if (file.size > 2 * 1024 * 1024) {
+        setImportStatus({ type: 'error', msg: "Le fichier est trop volumineux (max 2 Mo)." });
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (evt) => {
         const data = evt.target.result;
@@ -86,8 +96,95 @@ export default function StockImportExport() {
       setImportStatus({ type: 'error', msg: "Vous devez être connecté pour importer." });
       return;
     }
-    // On saute la première ligne (header)
+    // Limite de 500 items par import
     const rows = excelData.slice(1);
+    if (rows.length > 500) {
+      setImportStatus({ type: 'error', msg: "Limite de 500 items par import dépassée. Merci de diviser votre fichier." });
+      return;
+    }
+    // Confirmation si plus de 100 items
+    if (rows.length > 100 && !window.confirm(`Attention : tu t'apprêtes à importer ${rows.length} items. Confirme-tu ?`)) {
+      setImportStatus({ type: 'error', msg: "Import annulé par l'utilisateur." });
+      return;
+    }
+    // Détection de doublons (nom+date_achat)
+    const seen = new Set();
+    for (const row of rows) {
+      const nom = row[excelColumns.indexOf(mapping.nom)] || '';
+      let date_achat = row[excelColumns.indexOf(mapping.dateAchat)] || '';
+      date_achat = excelDateToISO(date_achat) || '';
+      if (!nom) continue;
+      const key = nom.trim().toLowerCase() + '|' + date_achat;
+      if (seen.has(key)) {
+        setImportStatus({ type: 'error', msg: `Doublon détecté dans le fichier : ${nom} (${date_achat})` });
+        return;
+      }
+      seen.add(key);
+    }
+    // Vérification stricte des champs
+    for (const row of rows) {
+      const nom = row[excelColumns.indexOf(mapping.nom)] || '';
+      if (!nom || nom.length > 30) {
+        setImportStatus({ type: 'error', msg: `Nom manquant ou trop long (max 30 caractères) sur une ligne.` });
+        return;
+      }
+      const taille = row[excelColumns.indexOf(mapping.taille)] || '';
+      if (taille && taille.length > 10) {
+        setImportStatus({ type: 'error', msg: `Taille trop longue (max 10 caractères) sur une ligne.` });
+        return;
+      }
+      const prix_achat = row[excelColumns.indexOf(mapping.prixAchat)] || '';
+      if (prix_achat && (isNaN(prix_achat) || parseFloat(prix_achat) > 99999.99)) {
+        setImportStatus({ type: 'error', msg: `Prix achat invalide ou trop élevé (max 99999.99) sur une ligne.` });
+        return;
+      }
+      const prix_vente = row[excelColumns.indexOf(mapping.prixVente)] || '';
+      if (prix_vente && (isNaN(prix_vente) || parseFloat(prix_vente) > 99999.99)) {
+        setImportStatus({ type: 'error', msg: `Prix vente invalide ou trop élevé (max 99999.99) sur une ligne.` });
+        return;
+      }
+      // Vérification des dates
+      let date_achat = row[excelColumns.indexOf(mapping.dateAchat)] || '';
+      let date_vente = row[excelColumns.indexOf(mapping.dateVente)] || '';
+      date_achat = excelDateToISO(date_achat);
+      date_vente = excelDateToISO(date_vente);
+      const minDate = new Date('2000-01-01');
+      const now = new Date();
+      if (date_achat) {
+        const d = new Date(date_achat);
+        if (d < minDate || d > now) {
+          setImportStatus({ type: 'error', msg: `Date d'achat invalide (doit être entre 2000 et aujourd'hui) sur une ligne.` });
+          return;
+        }
+      }
+      if (date_vente) {
+        const d = new Date(date_vente);
+        if (d < minDate || d > now) {
+          setImportStatus({ type: 'error', msg: `Date de vente invalide (doit être entre 2000 et aujourd'hui) sur une ligne.` });
+          return;
+        }
+        if (date_achat && new Date(date_vente) < new Date(date_achat)) {
+          setImportStatus({ type: 'error', msg: `Date de vente antérieure à la date d'achat sur une ligne.` });
+          return;
+        }
+      }
+    }
+    // Vérifie le délai de 10 minutes entre chaque import Excel
+    const lastImport = localStorage.getItem(`lastImportExcel_${user.id}`);
+    const now = Date.now();
+    if (lastImport && now - parseInt(lastImport) < 600000) {
+      setImportStatus({ type: 'error', msg: "Pour des raisons de sécurité, l'import Excel est limité : merci d'attendre 10 minutes entre chaque import." });
+      return;
+    }
+    // Vérifie le délai d'une minute entre chaque ajout d'item (manuel ou import)
+    const lastAdd = localStorage.getItem(`lastAddItem_${user.id}`);
+    if (lastAdd && now - parseInt(lastAdd) < 60000) {
+      setImportStatus({ type: 'error', msg: "Pour des raisons de sécurité, l'ajout d'item est limité : merci d'attendre 1 minute entre chaque ajout (import ou manuel)." });
+      return;
+    }
+    localStorage.setItem(`lastAddItem_${user.id}`, now.toString());
+    localStorage.setItem(`lastImportExcel_${user.id}`, now.toString());
+    // On saute la première ligne (header)
     let successCount = 0;
     let errorCount = 0;
     let errorMessages = [];
@@ -117,6 +214,19 @@ export default function StockImportExport() {
       console.log('Insertion item:', item);
       const { error } = await supabase.from('stock').insert(item);
       if (error) {
+        if (error.message && error.message.includes('limite')) {
+          setImportStatus({ type: 'error', msg: "Vous avez dépassé la limite d'import. Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        } else if (error.message && error.message.includes('délai')) {
+          setImportStatus({ type: 'error', msg: "Vous devez attendre avant de pouvoir ajouter/importer à nouveau. Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        } else if (error.message && error.message.includes('row-level security policy')) {
+          setImportStatus({ type: 'error', msg: "Action non autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        } else if (error.message && error.message.includes('violates unique constraint')) {
+          setImportStatus({ type: 'error', msg: "Un doublon a été détecté. Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        } else if (error.message && error.message.includes('value too long')) {
+          setImportStatus({ type: 'error', msg: "Une des informations saisies est trop longue. Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        } else {
+          setImportStatus({ type: 'error', msg: (error.message || "Erreur inconnue lors de l'import/export.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support." });
+        }
         errorCount++;
         errorMessages.push(error.message);
       }

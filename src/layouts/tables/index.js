@@ -80,9 +80,26 @@ function Stock() {
         .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
         .eq("user_id", user.id)
         .order("date_achat", { ascending: false });
-      if (error) setError(error.message);
-      setStocks(data || []);
-      setLoading(false);
+      if (error) {
+        if (error.message && error.message.includes('limite')) {
+          setError("Vous avez dépassé la limite autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (error.message && error.message.includes('délai')) {
+          setError("Vous devez attendre avant de pouvoir ajouter/supprimer à nouveau. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (error.message && error.message.includes('row-level security policy')) {
+          setError("Action non autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (error.message && error.message.includes('violates unique constraint')) {
+          setError("Un doublon a été détecté. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (error.message && error.message.includes('value too long')) {
+          setError("Une des informations saisies est trop longue. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else {
+          setError((error.message || "Erreur inconnue lors de l'opération.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        }
+        setStocks([]);
+        setLoading(false);
+      } else {
+        setStocks(data || []);
+        setLoading(false);
+      }
     };
     fetchStocks();
   }, [user]);
@@ -138,6 +155,7 @@ function Stock() {
 
   const handleDeleteMany = async () => {
     if (selectedItems.length === 0) return;
+    if (!window.confirm(`Es-tu sûr de vouloir supprimer ${selectedItems.length} item(s) du stock ? Cette action est irréversible.`)) return;
     await supabase.from("stock").delete().in('id', selectedItems).eq('user_id', user.id);
     setDeleteManyDialog(false);
     setSelectedItems([]);
@@ -305,16 +323,68 @@ function Stock() {
     setFormError(null);
     setFormSuccess(null);
     setAdding(true);
+    const now = new Date();
     if (!form.nom) {
       setFormError("Le nom est obligatoire.");
       setAdding(false);
       return;
+    }
+    if (form.nom.length > 30) {
+      setFormError("Le nom ne doit pas dépasser 30 caractères.");
+      setAdding(false);
+      return;
+    }
+    if (form.taille && form.taille.length > 10) {
+      setFormError("La taille ne doit pas dépasser 10 caractères.");
+      setAdding(false);
+      return;
+    }
+    if (form.prix_achat && (isNaN(form.prix_achat) || parseFloat(form.prix_achat) > 99999.99)) {
+      setFormError("Le prix d'achat est invalide ou trop élevé (max 99999.99).");
+      setAdding(false);
+      return;
+    }
+    if (form.prix_vente && (isNaN(form.prix_vente) || parseFloat(form.prix_vente) > 99999.99)) {
+      setFormError("Le prix de vente est invalide ou trop élevé (max 99999.99).");
+      setAdding(false);
+      return;
+    }
+    // Vérification des dates
+    const minDate = new Date('2000-01-01');
+    if (form.date_achat) {
+      const d = new Date(form.date_achat);
+      if (d < minDate || d > now) {
+        setFormError("La date d'achat doit être comprise entre 2000 et aujourd'hui.");
+        setAdding(false);
+        return;
+      }
+    }
+    if (form.date_vente) {
+      const d = new Date(form.date_vente);
+      if (d < minDate || d > now) {
+        setFormError("La date de vente doit être comprise entre 2000 et aujourd'hui.");
+        setAdding(false);
+        return;
+      }
+      if (form.date_achat && new Date(form.date_vente) < new Date(form.date_achat)) {
+        setFormError("La date de vente ne peut pas être antérieure à la date d'achat.");
+        setAdding(false);
+        return;
+      }
     }
     if (!user) {
       setFormError("Utilisateur non connecté.");
       setAdding(false);
       return;
     }
+    // Vérifie le délai de 30 secondes entre chaque ajout d'item (manuel ou import)
+    const lastAdd = localStorage.getItem(`lastAddItem_${user.id}`);
+    if (lastAdd && now - parseInt(lastAdd) < 30000) {
+      setFormError("Pour des raisons de sécurité, l'ajout d'item est limité : merci d'attendre 30 secondes entre chaque ajout (import ou manuel).");
+      setAdding(false);
+      return;
+    }
+    localStorage.setItem(`lastAddItem_${user.id}`, now.toString());
     const { error } = await supabase.from("stock").insert({
       user_id: user.id,
       nom: form.nom,
@@ -326,7 +396,20 @@ function Stock() {
       plateforme: form.plateforme
     });
     if (error) {
-      setFormError(error.message);
+      if (error.message && error.message.includes('limite')) {
+        setError("Vous avez dépassé la limite autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('délai')) {
+        setError("Vous devez attendre avant de pouvoir ajouter/supprimer à nouveau. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('row-level security policy')) {
+        setError("Action non autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('violates unique constraint')) {
+        setError("Un doublon a été détecté. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('value too long')) {
+        setError("Une des informations saisies est trop longue. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else {
+        setError((error.message || "Erreur inconnue lors de l'opération.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      }
+      setAdding(false);
     } else {
       setFormSuccess("Item ajouté !");
       setForm({ nom: "", taille: "", prix_achat: "", date_achat: "", prix_vente: "", date_vente: "", plateforme: "" });
@@ -389,7 +472,20 @@ function Stock() {
       plateforme: editItem.plateforme
     }).eq('id', editItem.id).eq('user_id', user.id);
     if (error) {
-      setFormError(error.message);
+      if (error.message && error.message.includes('limite')) {
+        setError("Vous avez dépassé la limite autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('délai')) {
+        setError("Vous devez attendre avant de pouvoir ajouter/supprimer à nouveau. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('row-level security policy')) {
+        setError("Action non autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('violates unique constraint')) {
+        setError("Un doublon a été détecté. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else if (error.message && error.message.includes('value too long')) {
+        setError("Une des informations saisies est trop longue. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      } else {
+        setError((error.message || "Erreur inconnue lors de l'opération.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+      }
+      setAdding(false);
     } else {
       setFormSuccess("Item modifié !");
       setEditDialog(false);

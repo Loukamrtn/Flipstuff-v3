@@ -40,7 +40,16 @@ export default function SignUp() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    let ip = '';
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      ip = data.ip;
+    } catch (e) {
+      ip = '';
+    }
+    // Création du compte Supabase Auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -48,12 +57,33 @@ export default function SignUp() {
         emailRedirectTo: window.location.origin + "/auth/callback"
       }
     });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess('Vérifie tes mails pour confirmer ton compte !');
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+      return;
     }
+    // Ajout du profil avec l'IP
+    const userId = signUpData.user?.id;
+    if (userId) {
+      const { error: profileError } = await supabase.from('profile').insert({ id: userId, ip_address: ip });
+      if (profileError) {
+        if (profileError.code === '23505') {
+          setError("Un compte est déjà enregistré pour votre adresse IP. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (profileError.message && profileError.message.includes('row-level security policy')) {
+          setError("Un compte est déjà enregistré pour votre adresse IP. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (profileError.message && profileError.message.includes('violates unique constraint')) {
+          setError("Un compte existe déjà avec ces informations. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else if (profileError.message && profileError.message.includes('value too long')) {
+          setError("Une des informations saisies est trop longue. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        } else {
+          setError((profileError.message || "Erreur inconnue lors de la création du profil.") + " Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
+        }
+        setLoading(false);
+        return;
+      }
+    }
+    setLoading(false);
+    setSuccess('Vérifie tes mails pour confirmer ton compte !');
   };
 
   return (
