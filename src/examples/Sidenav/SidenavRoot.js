@@ -73,6 +73,16 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     },
   });
 
+  // Ajout : forcer le fond opaque sur mobile
+  const mobileOpaque = {
+    [theme.breakpoints.down('md')]: {
+      background: '#24141d !important',
+      backdropFilter: 'none !important',
+      boxShadow: '0 8px 40px 0 #00000080',
+      opacity: 1,
+    },
+  };
+
   return {
     "& .MuiDrawer-paper": {
       boxShadow: xxl,
@@ -86,6 +96,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
           ),
     backdropFilter: transparentSidenav ? "unset" : "blur(120px)",
       ...(miniSidenav ? drawerCloseStyles() : drawerOpenStyles()),
+      ...mobileOpaque,
     },
   };
 });

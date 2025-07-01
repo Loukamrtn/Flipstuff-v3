@@ -48,15 +48,26 @@ const Projects = memo(function Projects({ ventesMois }) {
           Historique des ventes du mois
         </VuiTypography>
         <VuiTypography color="text" fontSize="1.01rem" mb={1}>
-          {loading ? <Skeleton width={120} /> : ventesMois.length === 0 ? "Aucune vente ce mois-ci." : `${ventesMois.length} vente${ventesMois.length > 1 ? "s" : ""} ce mois-ci`}
+          {loading ? <Skeleton width={120} /> : ventesMois.length === 0 ? "Aucune vente ce mois-ci." : `${ventesMois.length} vente${ventesMois.length > 1 ? "s" : ""}`}
         </VuiTypography>
       </VuiBox>
-      <VuiBox component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+      <VuiBox component="ul" sx={{
+        listStyle: 'none', p: 0, m: 0,
+        overflowX: { xs: 'auto', sm: 'auto', md: 'visible' },
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 1,
+        minHeight: 36,
+        maxWidth: '100%',
+        scrollbarWidth: 'thin',
+        '&::-webkit-scrollbar': { height: 6 },
+        '&::-webkit-scrollbar-thumb': { background: '#ff4fa355', borderRadius: 8 },
+      }}>
         {loading ? (
           Array.from({ length: 4 }).map((_, idx) => (
-            <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2 }} />
+            <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2, minWidth: 220 }} />
           ))
-        ) : (
+        ) :
           ventesMois.map((item, idx) => (
             <VuiBox
               key={item.id || idx}
@@ -68,6 +79,8 @@ const Projects = memo(function Projects({ ventesMois }) {
               px={1.5}
               gap={1}
               minHeight={36}
+              minWidth={220}
+              sx={{ bgcolor: 'rgba(255,255,255,0.01)', borderRadius: 3 }}
             >
               <FaCheckCircle size="18px" color="#1ed760" style={{ minWidth: 18, marginRight: 8 }} />
               <VuiTypography color="white" fontWeight="bold" fontSize="1.01rem" sx={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'left' }}>{item.nom}</VuiTypography>
@@ -76,7 +89,7 @@ const Projects = memo(function Projects({ ventesMois }) {
               <VuiTypography color="text" fontSize="0.95rem" sx={{ minWidth: 80, textAlign: 'right', opacity: 0.8 }}>{item.plateforme || '-'}</VuiTypography>
             </VuiBox>
           ))
-        )}
+        }
       </VuiBox>
     </Card>
   );

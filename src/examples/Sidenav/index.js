@@ -51,6 +51,7 @@ import SimmmpleLogo from "examples/Icons/SimmmpleLogo";
 import { useAuth } from "context/AuthContext";
 import { supabase } from "../../supabaseClient";
 import logoFlipstuff from "assets/images/logos/Flipstuff.png";
+import menuIcon from 'assets/images/small-logos/menu.svg';
 
 // function Sidenav({ color, brand, brandName, routes, ...rest }) {
 function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
@@ -191,9 +192,7 @@ function Sidenav({ color = "info", /* brandName, */ routes, ...props }) {
           onClick={closeSidenav}
           sx={{ cursor: "pointer" }}
         >
-          <VuiTypography variant="h6" color="text">
-            <Icon sx={{ fontWeight: "bold" }}>close</Icon>
-          </VuiTypography>
+          <img src={menuIcon} alt="close" style={{ width: 28, height: 28, filter: 'invert(1) brightness(2)' }} />
         </VuiBox>
         <img 
           src={logoFlipstuff} 

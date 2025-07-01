@@ -62,6 +62,7 @@ import {
 import team2 from "assets/images/team-2.jpg";
 import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
 import logoFS from "assets/images/logos/FS.png";
+import menuIcon from 'assets/images/small-logos/menu.svg';
 
 function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
   const [navbarType, setNavbarType] = useState();
@@ -138,8 +139,20 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <VuiBox color="inherit" display="flex" alignItems="center" width="100%" justifyContent="space-between">
+          {/* Bouton hamburger mobile */}
+          <VuiBox display={{ xs: 'flex', md: 'none' }} alignItems="center" mr={1}>
+            <IconButton
+              size="large"
+              color="inherit"
+              aria-label="Ouvrir le menu"
+              onClick={() => setMiniSidenav(dispatch, false)}
+              sx={{ mr: 1 }}
+            >
+              <img src={menuIcon} alt="menu" style={{ width: 28, height: 28, display: 'block', filter: 'invert(1) brightness(2)' }} />
+            </IconButton>
+          </VuiBox>
           {/* Nom de la page à gauche */}
-          <VuiTypography variant="h4" color="white" fontWeight="bold" textTransform="capitalize">
+          <VuiTypography variant="h4" color="white" fontWeight="bold" textTransform="capitalize" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' }, flex: 1 }}>
             {route && route.length > 0 ? route[route.length - 1] : ""}
           </VuiTypography>
           {/* Notifications à droite */}
