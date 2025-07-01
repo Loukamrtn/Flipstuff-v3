@@ -18,7 +18,6 @@
 
 import { useState } from "react";
 import { supabase } from '../../../supabaseClient';
-import googleLogo from '../../../assets/images/small-logos/logo-google.svg';
 import discordLogo from '../../../assets/images/small-logos/logo-discord.svg';
 import flipstuffLogo from '../../../assets/images/logos/Flipstuff.png';
 
@@ -122,34 +121,6 @@ export default function SignUp() {
         <p style={{ color: '#ffd3ea', marginBottom: 28, fontSize: '1.08rem', textAlign: 'center' }}>
           Rejoins Flipstuff pour gérer tes stocks et ventes de sneakers !
         </p>
-        <button
-          type="button"
-          onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } })}
-          style={{
-            width: '100%',
-            background: '#fff',
-            color: '#23141c',
-            border: 'none',
-            borderRadius: 16,
-            padding: '13px 0',
-            fontWeight: 700,
-            fontSize: '1.09rem',
-            letterSpacing: '0.04em',
-            cursor: 'pointer',
-            boxShadow: '0 4px 18px 0 #ff4fa330',
-            marginBottom: 12,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            transition: 'background 0.18s, box-shadow 0.18s, color 0.18s',
-          }}
-          onMouseOver={e => { e.currentTarget.style.background = '#f5f5f5'; e.currentTarget.style.boxShadow = '0 6px 24px 0 #ff4fa355'; }}
-          onMouseOut={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 4px 18px 0 #ff4fa330'; }}
-        >
-          <img src={googleLogo} alt="Google" style={{ width: 24, height: 24, marginRight: 8, display: 'block' }} />
-          Continuer avec Google
-        </button>
         <button
           type="button"
           onClick={() => supabase.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin + '/auth/callback' } })}

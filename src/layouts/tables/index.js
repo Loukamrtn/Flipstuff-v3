@@ -132,6 +132,7 @@ function Stock() {
   }
 
   const rows = sortedStocks.map(item => ({
+    id: String(item.id),
     nom: item.nom,
     taille: item.taille,
     prix_achat: item.prix_achat ? `${item.prix_achat} €` : "-",
@@ -142,10 +143,13 @@ function Stock() {
   }));
 
   const toggleSelectItem = (id) => {
-    setSelectedItems((prev) => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    const strId = String(id);
+    setSelectedItems((prev) => prev.includes(strId) ? prev.filter(i => i !== strId) : [...prev, strId]);
   };
 
-  const selectAll = () => setSelectedItems(filteredStocks.map(item => item.id));
+  const selectAll = () => {
+    setSelectedItems(rows.map(item => String(item.id)));
+  };
 
   const clearSelection = () => setSelectedItems([]);
 
@@ -155,7 +159,6 @@ function Stock() {
 
   const handleDeleteMany = async () => {
     if (selectedItems.length === 0) return;
-    if (!window.confirm(`Es-tu sûr de vouloir supprimer ${selectedItems.length} item(s) du stock ? Cette action est irréversible.`)) return;
     await supabase.from("stock").delete().in('id', selectedItems).eq('user_id', user.id);
     setDeleteManyDialog(false);
     setSelectedItems([]);
@@ -173,7 +176,7 @@ function Stock() {
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }} gap={3}>
         {sortedStocks.map((item, idx) => {
           const isSold = !!item.prix_vente && !!item.date_vente;
-          const checked = selectedItems.includes(item.id);
+          const checked = selectedItems.includes(String(item.id));
           return (
             <Card key={item.id || idx} sx={{
               bgcolor: '#24141d',
@@ -281,21 +284,6 @@ function Stock() {
           );
         })}
       </Box>
-      {/* Dialog de suppression multiple */}
-      <Dialog open={deleteManyDialog} onClose={closeDeleteManyDialog} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ textAlign: 'center', color: '#e7125d', fontWeight: 700, fontSize: '1.2rem', letterSpacing: '0.01em', mb: 2 }}>
-          Confirmer la suppression multiple
-        </DialogTitle>
-        <DialogContent>
-          <VuiTypography color="text" textAlign="center">
-            Es-tu sûr de vouloir supprimer {selectedItems.length} item(s) du stock ? Cette action est irréversible.
-          </VuiTypography>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'flex-end', p: 3 }}>
-          <Button onClick={closeDeleteManyDialog} color="secondary">Annuler</Button>
-          <Button onClick={handleDeleteMany} variant="contained" color="error" sx={{ color: '#fff', fontWeight: 700 }}>Supprimer</Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 
@@ -954,10 +942,10 @@ function Stock() {
             {error && <VuiTypography color="error.main">Erreur : {error}</VuiTypography>}
             {viewMode === 'list' ? (
               <>
-                <Table columns={columns} rows={sortedStocks.map(item => ({ ...item, id: item.id }))} selectedItems={selectedItems} toggleSelectItem={toggleSelectItem} selectAll={() => {
-                  if (selectedItems.length === sortedStocks.length) clearSelection();
-                  else setSelectedItems(sortedStocks.map(item => item.id));
-                }} handleSort={handleSort} sortConfig={sortConfig} />
+                <Table columns={columns} rows={rows} selectedItems={selectedItems} toggleSelectItem={toggleSelectItem} selectAll={() => {
+                  if (selectedItems.length === rows.length) clearSelection();
+                  else setSelectedItems(rows.map(item => item.id));
+                }} handleSort={handleSort} sortConfig={sortConfig} onDelete={openDeleteDialog} />
                 {loading && <VuiTypography color="text" mt={2}>Chargement...</VuiTypography>}
                 {!loading && rows.length === 0 && <VuiTypography color="text" mt={2}>Aucun stock trouvé.</VuiTypography>}
               </>
@@ -1258,6 +1246,51 @@ function Stock() {
           <DialogActions sx={{ justifyContent: 'flex-end', p: 3 }}>
             <Button onClick={closeDeleteDialog} color="secondary">Annuler</Button>
             <Button onClick={handleDeleteStock} variant="contained" color="error" sx={{ color: '#fff', fontWeight: 700 }}>Supprimer</Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open={deleteManyDialog} onClose={closeDeleteManyDialog} maxWidth="xs" fullWidth
+          PaperProps={{
+            sx: {
+              background: '#24141d',
+              borderRadius: 6,
+              boxShadow: '0 8px 40px 0 #ff4fa355',
+              p: 2,
+              color: '#fff',
+              minWidth: 340,
+            }
+          }}
+        >
+          <DialogTitle sx={{ textAlign: 'center', color: '#ff4fa3', fontWeight: 800, fontSize: '1.35rem', letterSpacing: '0.01em', mb: 2, bgcolor: 'transparent', borderRadius: 4 }}>
+            Confirmer la suppression multiple
+          </DialogTitle>
+          <DialogContent>
+            <VuiTypography color="#fff" textAlign="center" fontWeight={700} fontSize="1.13rem" mb={2}>
+              Es-tu sûr de vouloir supprimer {selectedItems.length} item(s) du stock ? Cette action est irréversible.
+            </VuiTypography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', p: 3, gap: 2 }}>
+            <Button onClick={closeDeleteManyDialog} variant="outlined" sx={{
+              color: '#ff4fa3',
+              borderColor: '#ff4fa3',
+              background: '#fff',
+              fontWeight: 700,
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+              fontSize: '1.08rem',
+              '&:hover': { background: '#ff8cce22', borderColor: '#ff4fa3' }
+            }}>Annuler</Button>
+            <Button onClick={handleDeleteMany} variant="contained" sx={{
+              background: 'linear-gradient(90deg, #ff4fa3 0%, #e7125d 100%)',
+              color: '#fff',
+              fontWeight: 700,
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+              fontSize: '1.08rem',
+              boxShadow: '0 2px 8px 0 #ff4fa344',
+              '&:hover': { background: 'linear-gradient(90deg, #e7125d 0%, #ff4fa3 100%)' }
+            }}>Supprimer</Button>
           </DialogActions>
         </Dialog>
       </VuiBox>
