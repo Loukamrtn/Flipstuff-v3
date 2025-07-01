@@ -36,21 +36,12 @@ function GithubPatchNotes() {
 
   return (
     <VuiBox mt={4}>
-      <VuiTypography variant="h4" fontWeight={700} mb={2} sx={{ color: '#ff4fa3', textAlign: 'center', textShadow: '0 1px 8px #ff4fa355' }}>
-        Historique GitHub (commits après le 1er juillet 2025)
-      </VuiTypography>
       <VuiBox component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {commitsFiltres.length === 0 && (
-          <VuiTypography color="#fff" my={2} textAlign="center">Aucun commit après le 1er juillet 2025.</VuiTypography>
-        )}
         {commitsFiltres.map(commit => (
           <VuiBox key={commit.sha} component="li" mb={2} p={2} sx={{ bgcolor: '#1a0d16', borderRadius: 3, boxShadow: '0 2px 12px #ff4fa322', border: '1px solid #ff4fa322' }}>
             <VuiTypography fontWeight={700} sx={{ color: '#fff', fontSize: '1.08rem' }}>{commit.commit.message}</VuiTypography>
             <VuiTypography fontSize="0.98rem" sx={{ color: '#ff4fa3', mt: 0.5 }}>
               {commit.commit.author.name} — {new Date(commit.commit.author.date).toLocaleString()}
-            </VuiTypography>
-            <VuiTypography fontSize="0.93rem" sx={{ color: '#bfa2c8', mt: 0.5 }}>
-              <a href={commit.html_url} target="_blank" rel="noopener noreferrer" style={{ color: '#bfa2c8', textDecoration: 'underline' }}>Voir sur GitHub</a>
             </VuiTypography>
           </VuiBox>
         ))}
