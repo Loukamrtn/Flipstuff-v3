@@ -19,7 +19,7 @@
 import { useState, useEffect } from "react";
 
 // react-router components
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useHistory } from "react-router-dom";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -69,6 +69,7 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1) || [];
+  const history = useHistory();
 
   useEffect(() => {
     // Setting the navbar type
@@ -119,6 +120,12 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
         title={["Flipstuff est en développement !"]}
         date={"Toute critique, bug ou suggestion est bienvenue sur le Discord."}
         onClick={handleCloseMenu}
+      />
+      <NotificationItem
+        image={<Icon style={{ fontSize: 28, color: '#ff4fa3', background: 'white', borderRadius: 8, padding: 2 }}>campaign</Icon>}
+        title={["Voir le dernier patch notes"]}
+        date={"Découvre les nouveautés et corrections de la dernière mise à jour !"}
+        onClick={(event) => { event.preventDefault(); handleCloseMenu(); history.push('/patch-note'); }}
       />
     </Menu>
   );

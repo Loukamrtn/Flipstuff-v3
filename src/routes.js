@@ -49,6 +49,7 @@ import SignUp from "layouts/authentication/sign-up";
 import ResetPassword from "layouts/authentication/reset-password";
 import StockImportExport from "layouts/stock-import-export";
 import AdminPage from "./layouts/admin";
+import PatchNote from "./layouts/patch-note";
 
 // Vision UI Dashboard React icons
 import { IoRocketSharp } from "react-icons/io5";
@@ -58,7 +59,7 @@ import { IoBuild } from "react-icons/io5";
 import { BsCreditCardFill } from "react-icons/bs";
 import { IoStatsChart } from "react-icons/io5";
 import { IoHome } from "react-icons/io5";
-import { FaBoxes } from "react-icons/fa";
+import { FaBoxes, FaRegStickyNote } from "react-icons/fa";
 
 import { useAuth } from "context/AuthContext";
 import { Redirect, Route } from "react-router-dom";

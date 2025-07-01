@@ -61,6 +61,7 @@ import AuthCallback from "./AuthCallback";
 import colors from "assets/theme/base/colors";
 import linearGradient from "assets/theme/functions/linearGradient";
 import AdminPage from "layouts/admin";
+import PatchNote from "layouts/patch-note";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -138,7 +139,8 @@ export default function App() {
         {layout === "dashboard" &&
           pathname !== "/authentication/sign-in" &&
           pathname !== "/authentication/sign-up" &&
-          pathname !== "/authentication/reset-password" && (
+          pathname !== "/authentication/reset-password" &&
+          pathname !== "/patch-note" && (
             <>
               <Sidenav
                 color={sidenavColor}
@@ -157,6 +159,7 @@ export default function App() {
           <PublicRoute path="/authentication/sign-in" component={SignIn} />
           <PublicRoute path="/authentication/sign-up" component={SignUp} />
           <PublicRoute path="/authentication/reset-password" component={ResetPassword} />
+          <Route path="/patch-note" component={PatchNote} />
           <PrivateRoute path="/dashboard" component={Dashboard} />
           <PrivateRoute path="/tables" component={Tables} />
           <PrivateRoute path="/profile" component={Profile} />
