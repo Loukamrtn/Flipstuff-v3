@@ -50,6 +50,7 @@ import ResetPassword from "layouts/authentication/reset-password";
 import StockImportExport from "layouts/stock-import-export";
 import AdminPage from "./layouts/admin";
 import PatchNote from "./layouts/patch-note";
+import PresentationPage from "./layouts/presentation";
 
 // Vision UI Dashboard React icons
 import { IoRocketSharp } from "react-icons/io5";
@@ -159,6 +160,10 @@ const routes = [
     component: AdminPage,
     noCollapse: true,
     adminOnly: true,
+  },
+  {
+    path: "/",
+    element: <PresentationPage />,
   },
 ];
 

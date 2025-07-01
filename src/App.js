@@ -62,6 +62,7 @@ import colors from "assets/theme/base/colors";
 import linearGradient from "assets/theme/functions/linearGradient";
 import AdminPage from "layouts/admin";
 import PatchNote from "layouts/patch-note";
+import PresentationPage from "layouts/presentation";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -140,7 +141,9 @@ export default function App() {
           pathname !== "/authentication/sign-in" &&
           pathname !== "/authentication/sign-up" &&
           pathname !== "/authentication/reset-password" &&
-          pathname !== "/patch-note" && (
+          pathname !== "/patch-note" &&
+          pathname !== "/" &&
+          (
             <>
               <Sidenav
                 color={sidenavColor}
@@ -155,6 +158,7 @@ export default function App() {
         )}
         {/* Suppression du layout VR et du configurator */}
         <Switch>
+          <Route exact path="/" component={PresentationPage} />
           <Route path="/auth/callback" component={AuthCallback} />
           <PublicRoute path="/authentication/sign-in" component={SignIn} />
           <PublicRoute path="/authentication/sign-up" component={SignUp} />
