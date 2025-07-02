@@ -20,6 +20,7 @@ import { useState } from "react";
 import { supabase } from '../../../supabaseClient';
 import discordLogo from '../../../assets/images/small-logos/logo-discord.svg';
 import flipstuffLogo from '../../../assets/images/logos/Flipstuff.png';
+import googleLogo from '../../../assets/images/small-logos/logo-google.svg';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -148,6 +149,34 @@ export default function SignUp() {
         >
           <img src={discordLogo} alt="Discord" style={{ width: 24, height: 24, marginRight: 8, display: 'block', background: 'transparent' }} />
           Continuer avec Discord
+        </button>
+        <button
+          type="button"
+          onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } })}
+          style={{
+            width: '100%',
+            background: '#fff',
+            color: '#23141c',
+            border: 'none',
+            borderRadius: 16,
+            padding: '13px 0',
+            fontWeight: 700,
+            fontSize: '1.09rem',
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+            boxShadow: '0 4px 18px 0 #ff4fa330',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            transition: 'background 0.18s, box-shadow 0.18s, color 0.18s',
+          }}
+          onMouseOver={e => { e.currentTarget.style.background = '#f1f1f1'; }}
+          onMouseOut={e => { e.currentTarget.style.background = '#fff'; }}
+        >
+          <img src={googleLogo} alt="Google" style={{ width: 22, height: 22, marginRight: 8, display: 'block', background: 'transparent', borderRadius: 3 }} />
+          Continuer avec Google
         </button>
         <div style={{
           width: '100%',
