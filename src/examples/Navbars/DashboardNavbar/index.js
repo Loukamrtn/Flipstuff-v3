@@ -98,6 +98,58 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
 
+  useEffect(() => {
+    // Gestion swipe tactile pour ouvrir la sidebar
+    let touchStartX = null;
+    let touchStartY = null;
+    let touchMoved = false;
+    function handleTouchStart(e) {
+      if (e.touches && e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchMoved = false;
+      }
+    }
+    function handleTouchMove(e) {
+      if (touchStartX !== null && e.touches && e.touches.length === 1) {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = Math.abs(e.touches[0].clientY - touchStartY);
+        // Seulement si le mouvement est principalement horizontal
+        if (Math.abs(dx) > 30 && dy < 40) {
+          touchMoved = true;
+        }
+      }
+    }
+    function handleTouchEnd(e) {
+      if (touchMoved && touchStartX !== null) {
+        const swipeDistance = e.changedTouches[0].clientX - touchStartX;
+        
+        if (miniSidenav) {
+          // Sidebar fermée : swipe de gauche à droite pour ouvrir
+          if (touchStartX < 40 && swipeDistance > 60) {
+            setMiniSidenav(dispatch, false);
+          }
+        } else {
+          // Sidebar ouverte : swipe de droite à gauche pour fermer
+          if (swipeDistance < -60) {
+            setMiniSidenav(dispatch, true);
+          }
+        }
+      }
+      touchStartX = null;
+      touchStartY = null;
+      touchMoved = false;
+    }
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [dispatch, fixedNavbar, miniSidenav]);
+
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
@@ -139,18 +191,20 @@ function DashboardNavbar({ absolute = false, light = false, isMini = false }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <VuiBox color="inherit" display="flex" alignItems="center" width="100%" justifyContent="space-between">
-          {/* Bouton hamburger mobile */}
-          <VuiBox display={{ xs: 'flex', md: 'none' }} alignItems="center" mr={1}>
-            <IconButton
-              size="large"
-              color="inherit"
-              aria-label="Ouvrir le menu"
-              onClick={() => setMiniSidenav(dispatch, false)}
-              sx={{ mr: 1 }}
-            >
-              <img src={menuIcon} alt="menu" style={{ width: 28, height: 28, display: 'block', filter: 'invert(1) brightness(2)' }} />
-            </IconButton>
-          </VuiBox>
+          {/* Bouton hamburger visible si sidebar cachée */}
+          {miniSidenav && (
+            <VuiBox display="flex" alignItems="center" mr={1}>
+              <IconButton
+                size="large"
+                color="inherit"
+                aria-label="Ouvrir le menu"
+                onClick={() => setMiniSidenav(dispatch, false)}
+                sx={{ mr: 1 }}
+              >
+                <img src={menuIcon} alt="menu" style={{ width: 28, height: 28, display: 'block', filter: 'invert(1) brightness(2)' }} />
+              </IconButton>
+            </VuiBox>
+          )}
           {/* Nom de la page à gauche */}
           <VuiTypography variant="h4" color="white" fontWeight="bold" textTransform="capitalize" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' }, flex: 1 }}>
             {route && route.length > 0 ? route[route.length - 1] : ""}

@@ -208,7 +208,6 @@ export default function Profile() {
                     value={form.displayName}
                     onChange={handleFormChange}
                     fullWidth
-                    autoFocus
                     InputLabelProps={{ shrink: false }}
                     placeholder="Pseudo ou nom complet"
                     InputProps={{
@@ -325,7 +324,6 @@ export default function Profile() {
                     value={form.displayName}
                     onChange={handleFormChange}
                     fullWidth
-                    autoFocus
                     InputLabelProps={{ shrink: false }}
                     placeholder="Pseudo ou nom complet"
                     InputProps={{

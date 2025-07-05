@@ -72,6 +72,15 @@ function Stock() {
   const [sellLoading, setSellLoading] = useState(false);
 
   useEffect(() => {
+    const now = Date.now();
+    const cacheStocks = localStorage.getItem('table_stocks_' + (user?.id || ''));
+    const cacheStocksTime = localStorage.getItem('table_stocks_time_' + (user?.id || ''));
+    const isStocksValid = cacheStocks && cacheStocksTime && (now - parseInt(cacheStocksTime) < 10 * 60 * 1000);
+    if (isStocksValid) {
+      setStocks(JSON.parse(cacheStocks));
+      setLoading(false);
+      return;
+    }
     const fetchStocks = async () => {
       setLoading(true);
       setError(null);
@@ -104,6 +113,8 @@ function Stock() {
       } else {
         setStocks(data || []);
         setLoading(false);
+        localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(data || []));
+        localStorage.setItem('table_stocks_time_' + (user?.id || ''), now.toString());
       }
     };
     fetchStocks();
@@ -173,13 +184,10 @@ function Stock() {
     await supabase.from("stock").delete().in('id', selectedItems).eq('user_id', user.id);
     setDeleteManyDialog(false);
     setSelectedItems([]);
-    // Rafraîchir la liste
-    const { data } = await supabase
-      .from("stock")
-      .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
-      .eq("user_id", user.id)
-      .order("date_achat", { ascending: false });
-    setStocks(data || []);
+    // Suppression locale multiple
+    setStocks(prev => prev.filter(s => !selectedItems.includes(String(s.id))));
+    localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(stocks));
+    localStorage.setItem('table_stocks_time_' + (user?.id || ''), Date.now().toString());
   };
 
   const CardGrid = () => (
@@ -205,17 +213,22 @@ function Stock() {
               {/* Header badge + boutons */}
               <Box display="flex" alignItems="center" gap={1.2} px={3} py={2} sx={{
                 bgcolor: isSold ? '#ff4fa3' : '#ff8cce',
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
+                borderTopLeftRadius: { xs: 12, sm: 24 },
+                borderTopRightRadius: { xs: 12, sm: 24 },
                 borderBottomLeftRadius: 0,
                 borderBottomRightRadius: 0,
-                minHeight: 48,
+                minHeight: { xs: 32, sm: 48 },
                 position: 'relative',
                 fontWeight: 700,
                 color: '#fff',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: { xs: 0.5, sm: 1.2 },
+                px: { xs: 1.5, sm: 3 },
+                py: { xs: 1, sm: 2 },
               }}>
                 {isSold ? '✔️' : '📦'}
-                <VuiTypography variant="h6" color="#fff" fontWeight={700} fontSize="1.18rem" sx={{ flex: 1 }}>
+                <VuiTypography variant="h6" color="#fff" fontWeight={700} fontSize="1.18rem" sx={{ flex: 1, fontSize: { xs: '1rem', sm: '1.18rem' }, mb: { xs: 0.5, sm: 0 } }}>
                   {item.nom}
                 </VuiTypography>
                 <VuiTypography
@@ -225,17 +238,18 @@ function Stock() {
                     bgcolor: isSold ? '#e7125d' : '#ff4fa3',
                     color: '#fff',
                     borderRadius: 2,
-                    px: 2,
-                    py: 0.5,
-                    fontSize: '0.92rem',
+                    px: { xs: 1.2, sm: 2 },
+                    py: { xs: 0.2, sm: 0.5 },
+                    fontSize: { xs: '0.85rem', sm: '0.92rem' },
                     letterSpacing: '0.01em',
-                    mr: 1.5,
+                    mr: { xs: 0, sm: 1.5 },
+                    mt: { xs: 0.5, sm: 0 },
                   }}
                 >
                   {isSold ? 'VENDU' : 'EN STOCK'}
                 </VuiTypography>
                 {/* Boutons modifier/supprimer intégrés dans le header */}
-                <Box display="flex" gap={0.5} alignItems="center">
+                <Box display="flex" gap={0.5} alignItems="center" sx={{ mt: { xs: 0.5, sm: 0 } }}>
                   <IconButton size="small" onClick={() => openEditDialog(item)} sx={{ color: '#fff', bgcolor: 'transparent', p: 0.7, '&:hover': { bgcolor: isSold ? '#e7125d33' : '#1ed76033', color: '#ff4fa3' } }}>
                     '📝'
                   </IconButton>
@@ -272,21 +286,39 @@ function Stock() {
                     minHeight: 32,
                     maxWidth: 32,
                     maxHeight: 32,
-                    bgcolor: '#ff4fa3',
                     borderRadius: '50%',
+                    background: 'transparent',
+                    border: '2px solid #ff4fa3',
+                    boxShadow: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 0 0 6px #ff4fa355',
-                    overflow: 'visible',
-                  }}></Box>}
+                  }} />}
+                  checkedIcon={<Box sx={{
+                    width: 32,
+                    height: 32,
+                    minWidth: 32,
+                    minHeight: 32,
+                    maxWidth: 32,
+                    maxHeight: 32,
+                    borderRadius: '50%',
+                    background: '#ff4fa3',
+                    border: '2px solid #ff4fa3',
+                    boxShadow: '0 2px 8px #ff4fa355',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 9.5L8 12.5L13 7.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Box>}
                   sx={{
                     color: '#ff4fa3!important',
                     bgcolor: 'transparent',
                     borderRadius: '50%',
                     p: 0.5,
-                    transition: 'all 0.2s',
-                    '& .MuiSvgIcon-root': { color: checked ? '#ff4fa3!important' : '#ff8cce!important' },
+                    transition: 'all 0.18s cubic-bezier(.4,2,.6,1)',
                   }}
                   size="medium"
                 />
@@ -384,7 +416,7 @@ function Stock() {
       return;
     }
     localStorage.setItem(`lastAddItem_${user.id}`, now.toString());
-    const { error } = await supabase.from("stock").insert({
+    const { data, error } = await supabase.from("stock").insert({
       user_id: user.id,
       nom: form.nom,
       taille: form.taille,
@@ -393,7 +425,7 @@ function Stock() {
       prix_vente: form.prix_vente ? parseFloat(form.prix_vente) : null,
       date_vente: form.date_vente || null,
       plateforme: form.plateforme
-    });
+    }).select().single();
     if (error) {
       if (error.message && error.message.includes('limite')) {
         setError("Vous avez dépassé la limite autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
@@ -413,13 +445,10 @@ function Stock() {
       setFormSuccess("Item ajouté !");
       setForm({ nom: "", taille: "", prix_achat: "", date_achat: "", prix_vente: "", date_vente: "", plateforme: "" });
       setOpenDialog(false);
-      // Rafraîchir la liste
-      const { data } = await supabase
-        .from("stock")
-        .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
-        .eq("user_id", user.id)
-        .order("date_achat", { ascending: false });
-      setStocks(data || []);
+      // Ajout local
+      setStocks(prev => [data, ...prev]);
+      localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(stocks));
+      localStorage.setItem('table_stocks_time_' + (user?.id || ''), Date.now().toString());
     }
     setAdding(false);
   };
@@ -461,7 +490,7 @@ function Stock() {
       setAdding(false);
       return;
     }
-    const { error } = await supabase.from("stock").update({
+    const { data, error } = await supabase.from("stock").update({
       nom: editItem.nom,
       taille: editItem.taille,
       prix_achat: editItem.prix_achat ? parseFloat(editItem.prix_achat) : null,
@@ -469,7 +498,7 @@ function Stock() {
       prix_vente: editItem.prix_vente ? parseFloat(editItem.prix_vente) : null,
       date_vente: editItem.date_vente || null,
       plateforme: editItem.plateforme
-    }).eq('id', editItem.id).eq('user_id', user.id);
+    }).eq('id', editItem.id).eq('user_id', user.id).select().single();
     if (error) {
       if (error.message && error.message.includes('limite')) {
         setError("Vous avez dépassé la limite autorisée. Si vous pensez qu'il s'agit d'une erreur, contactez le support.");
@@ -489,13 +518,10 @@ function Stock() {
       setFormSuccess("Item modifié !");
       setEditDialog(false);
       setEditItem(null);
-      // Rafraîchir la liste
-      const { data } = await supabase
-        .from("stock")
-        .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
-        .eq("user_id", user.id)
-        .order("date_achat", { ascending: false });
-      setStocks(data || []);
+      // Maj locale
+      setStocks(prev => prev.map(s => s.id === data.id ? data : s));
+      localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(stocks));
+      localStorage.setItem('table_stocks_time_' + (user?.id || ''), Date.now().toString());
     }
     setAdding(false);
   };
@@ -505,13 +531,10 @@ function Stock() {
     await supabase.from("stock").delete().eq('id', deleteItem.id).eq('user_id', user.id);
     setDeleteDialog(false);
     setDeleteItem(null);
-    // Rafraîchir la liste
-    const { data } = await supabase
-      .from("stock")
-      .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
-      .eq("user_id", user.id)
-      .order("date_achat", { ascending: false });
-    setStocks(data || []);
+    // Suppression locale
+    setStocks(prev => prev.filter(s => String(s.id) !== String(deleteItem.id)));
+    localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(stocks));
+    localStorage.setItem('table_stocks_time_' + (user?.id || ''), Date.now().toString());
   };
 
   const handleSort = (key) => {
@@ -545,144 +568,88 @@ function Stock() {
       setSellLoading(false);
       return;
     }
-    const { error } = await supabase.from('stock').update({
+    const { data, error } = await supabase.from('stock').update({
       prix_vente: sellForm.prix_vente,
       date_vente: sellForm.date_vente,
       plateforme: sellForm.plateforme
-    }).eq('id', sellItem.id);
+    }).eq('id', sellItem.id).select().single();
     setSellLoading(false);
     if (error) setSellError(error.message);
     else closeSellDialog();
-    // Rafraîchir la liste
-    const { data } = await supabase
-      .from("stock")
-      .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
-      .eq("user_id", user.id)
-      .order("date_achat", { ascending: false });
-    setStocks(data || []);
+    // Maj locale
+    setStocks(prev => prev.map(s => s.id === data.id ? data : s));
+    localStorage.setItem('table_stocks_' + (user?.id || ''), JSON.stringify(stocks));
+    localStorage.setItem('table_stocks_time_' + (user?.id || ''), Date.now().toString());
   };
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <VuiBox py={3}>
-        <VuiBox display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2} mb={3}>
-          <Box display="flex" alignItems="center" gap={2}>
+        <VuiBox display="flex" flexDirection={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" flexWrap="wrap" gap={2} mb={3}>
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            sx={{
+              overflowX: { xs: 'auto', sm: 'visible' },
+              whiteSpace: { xs: 'nowrap', sm: 'normal' },
+              gap: { xs: 1, sm: 2 },
+              pb: { xs: 0.5, sm: 0 },
+              mb: { xs: 1, sm: 0 },
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
             <ToggleButtonGroup
               value={viewMode}
               exclusive
               onChange={(_, v) => v && setViewMode(v)}
-              sx={{ bgcolor: 'transparent', borderRadius: 3, boxShadow: 'none', gap: 1 }}
+              sx={{
+                bgcolor: 'transparent',
+                borderRadius: 3,
+                boxShadow: 'none',
+                gap: { xs: 0.5, sm: 1 },
+                height: { xs: 36, sm: 44 },
+                '& .MuiToggleButton-root': {
+                  fontSize: { xs: '1.1rem', sm: '1.2rem' },
+                  px: { xs: 1.2, sm: 2 },
+                  py: { xs: 0.5, sm: 1 },
+                },
+              }}
             >
-              <ToggleButton value="list"
+              <ToggleButton value="list">📋</ToggleButton>
+              <ToggleButton value="card">🗂️</ToggleButton>
+            </ToggleButtonGroup>
+            <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1 }} ml={{ xs: 1, sm: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpenDialog}
                 sx={{
+                  background: '#ff4fa3',
                   color: '#fff',
-                  border: 0,
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
                   fontWeight: 700,
-                  fontSize: '1.1rem',
-                  background: 'transparent',
-                  '&.Mui-selected': {
-                    bgcolor: '#ff4fa3',
-                    color: '#fff',
-                    boxShadow: '0 2px 12px 0 #ff4fa355',
-                  },
-                  '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
+                  borderRadius: 2.5,
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 0.7, sm: 1.2 },
+                  fontSize: { xs: '1rem', sm: '1.08rem' },
+                  boxShadow: '0 2px 12px 0 #ff4fa355',
+                  mt: { xs: 0, sm: 0 },
+                  mb: { xs: 0, sm: 0 },
+                  minWidth: { xs: 0, sm: 0 },
+                  whiteSpace: 'nowrap',
+                  '&:hover': { background: '#e7125d' },
                 }}
               >
-                📋
-              </ToggleButton>
-              <ToggleButton value="card"
-                sx={{
-                  color: '#fff',
-                  border: 0,
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  background: 'transparent',
-                  '&.Mui-selected': {
-                    bgcolor: '#ff4fa3',
-                    color: '#fff',
-                    boxShadow: '0 2px 12px 0 #ff4fa355',
-                  },
-                  '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
-                }}
-              >
-                📜
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <ToggleButtonGroup value={filter} exclusive onChange={(_, v) => v && setFilter(v)} sx={{ ml: 2 }}>
-              <ToggleButton value="all"
-                sx={{
-                  fontWeight: 700,
-                  color: '#fff',
-                  border: 0,
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontSize: '1.05rem',
-                  background: 'transparent',
-                  '&.Mui-selected': {
-                    bgcolor: '#ff4fa3 !important',
-                    color: '#fff !important',
-                    boxShadow: '0 2px 12px 0 #ff4fa355',
-                  },
-                  '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
-                }}
-              >TOUS</ToggleButton>
-              <ToggleButton value="stock"
-                sx={{
-                  fontWeight: 700,
-                  color: '#fff',
-                  border: 0,
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontSize: '1.05rem',
-                  background: 'transparent',
-                  '&.Mui-selected': {
-                    bgcolor: '#ff4fa3 !important',
-                    color: '#fff !important',
-                    boxShadow: '0 2px 12px 0 #ff4fa355',
-                  },
-                  '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
-                }}
-              >EN STOCK</ToggleButton>
-              <ToggleButton value="sold"
-                sx={{
-                  fontWeight: 700,
-                  color: '#fff',
-                  border: 0,
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  fontSize: '1.05rem',
-                  background: 'transparent',
-                  '&.Mui-selected': {
-                    bgcolor: '#ff4fa3 !important',
-                    color: '#fff !important',
-                    boxShadow: '0 2px 12px 0 #ff4fa355',
-                  },
-                  '&:hover': { bgcolor: '#ff4fa3', color: '#fff' },
-                }}
-              >VENDUS</ToggleButton>
-            </ToggleButtonGroup>
+                + Ajouter un Item
+              </Button>
+            </Box>
           </Box>
-          <Box display="flex" alignItems="center" gap={2}>
-            {selectedItems.length > 0 && (
-              <Box display="flex" alignItems="center" gap={2}>
-                <VuiTypography sx={{ color: '#ff4fa3!important', fontWeight: 'bold', fontSize: '1.2rem', letterSpacing: '0.01em', textShadow: '0 1px 8px #ff4fa355' }}>{selectedItems.length} sélectionné(s)</VuiTypography>
-                <Button variant="contained" color="error" onClick={openDeleteManyDialog} sx={{ background: '#ff4fa3', color: '#fff', fontWeight: 700, boxShadow: '0 2px 8px #ff4fa344', '&:hover': { background: '#e7125d' } }}>Supprimer la sélection</Button>
-                <Button variant="outlined" color="secondary" onClick={clearSelection} sx={{ color: '#ff4fa3', borderColor: '#ff4fa3', fontWeight: 700, '&:hover': { background: '#ff8cce22', borderColor: '#ff4fa3' } }}>Annuler</Button>
-              </Box>
-            )}
-            <Button variant="contained" color="primary" sx={{ background: '#ff4fa3', color: '#fff', fontWeight: 700, borderRadius: 3, px: 3, py: 1, boxShadow: '0 2px 8px #ff4fa344', '&:hover': { background: '#e7125d' } }} onClick={handleOpenDialog}>
-              + Ajouter un Item
-            </Button>
+          {/* Filtres (TOUS, EN STOCK, VENDU) */}
+          <Box display="flex" flexDirection="row" alignItems="center" gap={{ xs: 1, sm: 2 }} sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <Button variant={filter === 'all' ? 'contained' : 'outlined'} color="primary" onClick={() => setFilter('all')} sx={{ fontWeight: 700, px: { xs: 1.5, sm: 3 }, py: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.08rem' } }}>TOUS</Button>
+            <Button variant={filter === 'stock' ? 'contained' : 'outlined'} color="primary" onClick={() => setFilter('stock')} sx={{ fontWeight: 700, px: { xs: 1.5, sm: 3 }, py: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.08rem' } }}>EN STOCK</Button>
+            <Button variant={filter === 'sold' ? 'contained' : 'outlined'} color="primary" onClick={() => setFilter('sold')} sx={{ fontWeight: 700, px: { xs: 1.5, sm: 3 }, py: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.08rem' } }}>VENDU</Button>
           </Box>
         </VuiBox>
         <VuiBox mb={3}>

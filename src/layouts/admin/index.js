@@ -28,12 +28,21 @@ export default function AdminPage() {
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user) { setIsAdmin(false); setChecking(false); return; }
+      // Vérifie le cache local
+      const cached = localStorage.getItem('isAdmin_' + user.id);
+      if (cached !== null) {
+        setIsAdmin(cached === 'true');
+        setChecking(false);
+        return;
+      }
       const { data } = await supabase
         .from('profile')
         .select('rang')
         .eq('id', user.id)
         .single();
-      setIsAdmin(data?.rang === 'admin');
+      const isAdminVal = data?.rang === 'admin';
+      setIsAdmin(isAdminVal);
+      localStorage.setItem('isAdmin_' + user.id, isAdminVal);
       setChecking(false);
     };
     checkAdmin();
@@ -42,15 +51,31 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAdmin) return;
     const fetchUsers = async () => {
-      // Récupère tous les profils
-      const { data: profiles } = await supabase.from('profile').select('id, rang');
-      // Récupère tous les utilisateurs via la fonction RPC get_users
-      let usersData = [];
-      let error = null;
-      if (supabase.rpc) {
-        const { data, error: rpcError } = await supabase.rpc('get_users');
-        usersData = data || [];
-        error = rpcError;
+      // Cache local avec expiration (10 min)
+      const now = Date.now();
+      const cacheProfiles = localStorage.getItem('admin_profiles');
+      const cacheUsers = localStorage.getItem('admin_users');
+      const cacheProfilesTime = localStorage.getItem('admin_profiles_time');
+      const cacheUsersTime = localStorage.getItem('admin_users_time');
+      let profiles, usersData;
+      const isProfilesValid = cacheProfiles && cacheProfilesTime && (now - parseInt(cacheProfilesTime) < 10 * 60 * 1000);
+      const isUsersValid = cacheUsers && cacheUsersTime && (now - parseInt(cacheUsersTime) < 10 * 60 * 1000);
+      if (isProfilesValid && isUsersValid && !actionLoading) {
+        profiles = JSON.parse(cacheProfiles);
+        usersData = JSON.parse(cacheUsers);
+      } else {
+        const { data: profilesData } = await supabase.from('profile').select('id, rang');
+        profiles = profilesData;
+        let usersDataTemp = [];
+        if (supabase.rpc) {
+          const { data } = await supabase.rpc('get_users');
+          usersDataTemp = data || [];
+        }
+        usersData = usersDataTemp;
+        localStorage.setItem('admin_profiles', JSON.stringify(profiles));
+        localStorage.setItem('admin_users', JSON.stringify(usersData));
+        localStorage.setItem('admin_profiles_time', now.toString());
+        localStorage.setItem('admin_users_time', now.toString());
       }
       // Jointure manuelle
       const usersList = (usersData || []).map(u => ({

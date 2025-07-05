@@ -77,6 +77,16 @@ function Dashboard() {
   const [moisAffiches, setMoisAffiches] = useState(6); // 6 par défaut
 
   useEffect(() => {
+    const now = Date.now();
+    const cacheStats = localStorage.getItem('dashboard_stats_' + (user?.id || '')); 
+    const cacheStatsTime = localStorage.getItem('dashboard_stats_time_' + (user?.id || ''));
+    const isStatsValid = cacheStats && cacheStatsTime && (now - parseInt(cacheStatsTime) < 10 * 60 * 1000);
+    if (isStatsValid) {
+      const stats = JSON.parse(cacheStats);
+      setStocks(stats.stocks || []);
+      setLoading(false);
+      return;
+    }
     const fetchStocks = async () => {
       setLoading(true);
       if (!user) {
@@ -90,6 +100,8 @@ function Dashboard() {
         .eq("user_id", user.id);
       setStocks(data || []);
       setLoading(false);
+      localStorage.setItem('dashboard_stats_' + (user?.id || ''), JSON.stringify({ stocks: data }));
+      localStorage.setItem('dashboard_stats_time_' + (user?.id || ''), now.toString());
     };
     fetchStocks();
   }, [user]);
