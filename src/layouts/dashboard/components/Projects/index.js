@@ -55,7 +55,7 @@ const Projects = memo(function Projects({ ventesMois }) {
         listStyle: 'none', p: 0, m: 0,
         overflowX: { xs: 'auto', sm: 'auto', md: 'visible' },
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: { xs: 'row', md: 'column' },
         gap: 1,
         minHeight: 36,
         maxWidth: '100%',
@@ -65,7 +65,7 @@ const Projects = memo(function Projects({ ventesMois }) {
       }}>
         {loading ? (
           Array.from({ length: 4 }).map((_, idx) => (
-            <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2, minWidth: 220 }} />
+            <Skeleton key={idx} height={36} sx={{ mb: 1, borderRadius: 2, minWidth: { xs: 220, md: 'unset' }, maxWidth: { xs: 340, md: '100%' }, width: { xs: 'auto', md: '100%' } }} />
           ))
         ) :
           ventesMois.map((item, idx) => (
@@ -79,7 +79,9 @@ const Projects = memo(function Projects({ ventesMois }) {
               px={1.5}
               gap={1}
               minHeight={36}
-              minWidth={220}
+              minWidth={{ xs: 220, md: 'unset' }}
+              maxWidth={{ xs: 340, md: '100%' }}
+              width={{ xs: 'auto', md: '100%' }}
               sx={{ bgcolor: 'rgba(255,255,255,0.01)', borderRadius: 3 }}
             >
               <FaCheckCircle size="18px" color="#1ed760" style={{ minWidth: 18, marginRight: 8 }} />

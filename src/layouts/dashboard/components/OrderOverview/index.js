@@ -82,7 +82,7 @@ const OrdersOverview = memo(function OrdersOverview({ stocks, derniersAjouts }) 
               listStyle: 'none', p: 0, m: 0,
               overflowX: { xs: 'auto', sm: 'auto', md: 'visible' },
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: { xs: 'row', md: 'column' },
               gap: 1,
               minHeight: 36,
               maxWidth: '100%',
@@ -102,9 +102,9 @@ const OrdersOverview = memo(function OrdersOverview({ stocks, derniersAjouts }) 
                   px={1.5}
                   gap={1}
                   minHeight={36}
-                  minWidth={180}
-                  maxWidth={{ xs: '95vw', sm: 340, md: 340 }}
-                  width="auto"
+                  minWidth={{ xs: 180, md: 'unset' }}
+                  maxWidth={{ xs: '95vw', sm: 340, md: '100%' }}
+                  width={{ xs: 'auto', md: '100%' }}
                   overflow="hidden"
                   sx={{ bgcolor: 'rgba(255,255,255,0.01)', borderRadius: 3, overflow: 'hidden' }}
                 >

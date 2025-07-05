@@ -65,6 +65,11 @@ function Stock() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [deleteManyDialog, setDeleteManyDialog] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [sellDialog, setSellDialog] = useState(false);
+  const [sellItem, setSellItem] = useState(null);
+  const [sellForm, setSellForm] = useState({ prix_vente: '', date_vente: new Date().toISOString().slice(0,10), plateforme: '' });
+  const [sellError, setSellError] = useState(null);
+  const [sellLoading, setSellLoading] = useState(false);
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -112,6 +117,7 @@ function Stock() {
     { name: "prix_vente", align: "center" },
     { name: "date_vente", align: "center" },
     { name: "plateforme", align: "center" },
+    { name: "actions", align: "center" },
   ];
 
   const filteredStocks = (stocks || []).filter(item => {
@@ -140,6 +146,11 @@ function Stock() {
     prix_vente: item.prix_vente ? `${item.prix_vente} €` : "-",
     date_vente: item.date_vente ? new Date(item.date_vente).toLocaleDateString() : "-",
     plateforme: item.plateforme || "-",
+    actions: !item.prix_vente && !item.date_vente ? (
+      <Button variant="outlined" size="small" sx={{ borderColor: '#ff4fa3', color: '#ff4fa3', fontWeight: 700, borderRadius: 3, px: 2, fontSize: '1.01rem', letterSpacing: '0.01em', '&:hover': { background: '#ff4fa322', borderColor: '#ff4fa3' } }} onClick={() => openSellDialog(item)}>Vendu ?</Button>
+    ) : (
+      <Button variant="outlined" size="small" sx={{ borderColor: '#ff4fa3', color: '#ff4fa3', fontWeight: 700, borderRadius: 3, px: 2, fontSize: '1.01rem', letterSpacing: '0.01em', '&:hover': { background: '#ff4fa322', borderColor: '#ff4fa3' } }} onClick={() => openEditDialog(item)}>Modifier</Button>
+    ),
   }));
 
   const toggleSelectItem = (id) => {
@@ -512,6 +523,45 @@ function Stock() {
     });
   };
 
+  const openSellDialog = (item) => {
+    setSellItem(item);
+    setSellForm({ prix_vente: '', date_vente: new Date().toISOString().slice(0,10), plateforme: '' });
+    setSellError(null);
+    setSellDialog(true);
+  };
+  const closeSellDialog = () => {
+    setSellDialog(false);
+    setSellItem(null);
+    setSellError(null);
+  };
+  const handleSellFormChange = (e) => {
+    setSellForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+  const handleSellSubmit = async () => {
+    setSellLoading(true);
+    setSellError(null);
+    if (!sellForm.prix_vente || !sellForm.date_vente || !sellForm.plateforme) {
+      setSellError('Tous les champs sont obligatoires.');
+      setSellLoading(false);
+      return;
+    }
+    const { error } = await supabase.from('stock').update({
+      prix_vente: sellForm.prix_vente,
+      date_vente: sellForm.date_vente,
+      plateforme: sellForm.plateforme
+    }).eq('id', sellItem.id);
+    setSellLoading(false);
+    if (error) setSellError(error.message);
+    else closeSellDialog();
+    // Rafraîchir la liste
+    const { data } = await supabase
+      .from("stock")
+      .select("id, nom, taille, prix_achat, date_achat, prix_vente, date_vente, plateforme")
+      .eq("user_id", user.id)
+      .order("date_achat", { ascending: false });
+    setStocks(data || []);
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -795,96 +845,18 @@ function Stock() {
                     <>
                       <Grid item xs={12}>
                         <VuiTypography sx={{ color: '#fff', fontWeight: 700 }} fontSize="0.98rem" mb={0.5} component="label" htmlFor="stock-prix-vente">
-                          Prix de vente (€)
+                          Prix vente : <b style={{ color: '#1ed760' }}>{form.prix_vente ? `${form.prix_vente} €` : '-'}</b>
                         </VuiTypography>
-                        <TextField
-                          label=""
-                          name="prix_vente"
-                          id="stock-prix-vente"
-                          value={form.prix_vente}
-                          onChange={handleFormChange}
-                          fullWidth
-                          type="number"
-                          autoComplete="off"
-                          InputLabelProps={{ shrink: false }}
-                          placeholder="Ex : 180"
-                          InputProps={{
-                            style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
-                            disableUnderline: true,
-                          }}
-                          sx={{
-                            mb: 1.5,
-                            '& .MuiOutlinedInput-root': {
-                              background: '#24141d',
-                              borderRadius: 3,
-                              '& fieldset': { borderColor: '#444', borderWidth: 1 },
-                              '&:hover fieldset': { borderColor: '#ff4fa3' },
-                              '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                            },
-                            'input::placeholder': { color: '#bfa2c8', opacity: 1 },
-                          }}
-                        />
                       </Grid>
                       <Grid item xs={12}>
                         <VuiTypography sx={{ color: '#fff', fontWeight: 700 }} fontSize="0.98rem" mb={0.5} component="label" htmlFor="stock-date-vente">
-                          Date de vente
+                          Date vente : <b>{form.date_vente ? new Date(form.date_vente).toLocaleDateString() : '-'}</b>
                         </VuiTypography>
-                        <TextField
-                          label=""
-                          name="date_vente"
-                          id="stock-date-vente"
-                          value={form.date_vente}
-                          onChange={handleFormChange}
-                          fullWidth
-                          type="date"
-                          autoComplete="off"
-                          InputLabelProps={{ shrink: false }}
-                          InputProps={{
-                            style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 500, fontSize: '1.08rem', padding: '12px 16px' },
-                            disableUnderline: true,
-                          }}
-                          sx={{
-                            mb: 1.5,
-                            '& .MuiOutlinedInput-root': {
-                              background: '#24141d',
-                              borderRadius: 3,
-                              '& fieldset': { borderColor: '#444', borderWidth: 1 },
-                              '&:hover fieldset': { borderColor: '#ff4fa3' },
-                              '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                            },
-                          }}
-                        />
                       </Grid>
                       <Grid item xs={12}>
                         <VuiTypography sx={{ color: '#fff', fontWeight: 700 }} fontSize="0.98rem" mb={0.5} component="label" htmlFor="stock-plateforme">
-                          Plateforme
+                          Plateforme : <b>{form.plateforme || '-'}</b>
                         </VuiTypography>
-                        <TextField
-                          label=""
-                          name="plateforme"
-                          id="stock-plateforme"
-                          value={form.plateforme}
-                          onChange={handleFormChange}
-                          fullWidth
-                          autoComplete="off"
-                          InputLabelProps={{ shrink: false }}
-                          placeholder="Ex : Vinted, Leboncoin..."
-                          InputProps={{
-                            style: { color: '#fff', background: '#24141d', borderRadius: 10, fontWeight: 400, fontSize: '1.08rem', padding: '12px 16px' },
-                            disableUnderline: true,
-                          }}
-                          sx={{
-                            mb: 1.5,
-                            '& .MuiOutlinedInput-root': {
-                              background: '#24141d',
-                              borderRadius: 3,
-                              '& fieldset': { borderColor: '#444', borderWidth: 1 },
-                              '&:hover fieldset': { borderColor: '#ff4fa3' },
-                              '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 },
-                            },
-                            'input::placeholder': { color: '#bfa2c8', opacity: 1 },
-                          }}
-                        />
                       </Grid>
                     </>
                   )}
@@ -1291,6 +1263,58 @@ function Stock() {
               boxShadow: '0 2px 8px 0 #ff4fa344',
               '&:hover': { background: 'linear-gradient(90deg, #e7125d 0%, #ff4fa3 100%)' }
             }}>Supprimer</Button>
+          </DialogActions>
+        </Dialog>
+        {/* Dialog de vente */}
+        <Dialog open={sellDialog} onClose={closeSellDialog} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: '#24141d', borderRadius: 4, p: 0 } }}>
+          <DialogTitle sx={{ color: '#fff', fontWeight: 700, textAlign: 'center', letterSpacing: '0.01em', fontSize: '2rem', pt: 3, pb: 1, bgcolor: 'transparent' }}>
+            {sellItem?.prix_vente && sellItem?.date_vente ? 'Modifier la vente' : 'Vendre l\'article'}
+          </DialogTitle>
+          <DialogContent sx={{ bgcolor: 'transparent', p: 3, pt: 1 }}>
+            <VuiTypography mb={2} sx={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem' }}>Nom : <b>{sellItem?.nom}</b></VuiTypography>
+            <VuiTypography sx={{ color: '#fff', fontWeight: 700, mb: 0.5, fontSize: '1.05rem' }}>Prix de vente (€)</VuiTypography>
+            <TextField
+              label=""
+              name="prix_vente"
+              value={sellForm.prix_vente}
+              onChange={handleSellFormChange}
+              type="number"
+              fullWidth
+              autoComplete="off"
+              inputProps={{ min: 0, step: 0.01, style: { color: '#bfa2c8', fontWeight: 500, fontSize: '1.08rem', padding: '12px 16px' } }}
+              placeholder="Ex : 180"
+              sx={{ mb: 2, bgcolor: '#fff1', color: '#bfa2c8', borderRadius: 2.5, '& .MuiOutlinedInput-root': { background: '#fff1', borderRadius: 2.5, color: '#bfa2c8', '& fieldset': { borderColor: '#ff4fa3', borderWidth: 1 }, '&:hover fieldset': { borderColor: '#ff4fa3' }, '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 } }, 'input::placeholder': { color: '#bfa2c8', opacity: 0.8 } }}
+            />
+            <VuiTypography sx={{ color: '#fff', fontWeight: 700, mb: 0.5, fontSize: '1.05rem' }}>Date de vente</VuiTypography>
+            <TextField
+              label=""
+              name="date_vente"
+              value={sellForm.date_vente}
+              onChange={handleSellFormChange}
+              type="date"
+              fullWidth
+              autoComplete="off"
+              inputProps={{ style: { color: '#bfa2c8', fontWeight: 500, fontSize: '1.08rem', padding: '12px 16px' } }}
+              InputLabelProps={{ shrink: true, style: { color: '#fff' } }}
+              sx={{ mb: 2, bgcolor: '#fff1', color: '#bfa2c8', borderRadius: 2.5, '& .MuiOutlinedInput-root': { background: '#fff1', borderRadius: 2.5, color: '#bfa2c8', '& fieldset': { borderColor: '#ff4fa3', borderWidth: 1 }, '&:hover fieldset': { borderColor: '#ff4fa3' }, '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 } } }}
+            />
+            <VuiTypography sx={{ color: '#fff', fontWeight: 700, mb: 0.5, fontSize: '1.05rem' }}>Plateforme</VuiTypography>
+            <TextField
+              label=""
+              name="plateforme"
+              value={sellForm.plateforme}
+              onChange={handleSellFormChange}
+              fullWidth
+              autoComplete="off"
+              placeholder="Ex : Vinted, Leboncoin..."
+              inputProps={{ style: { color: '#bfa2c8', fontWeight: 500, fontSize: '1.08rem', padding: '12px 16px' } }}
+              sx={{ mb: 2, bgcolor: '#fff1', color: '#bfa2c8', borderRadius: 2.5, '& .MuiOutlinedInput-root': { background: '#fff1', borderRadius: 2.5, color: '#bfa2c8', '& fieldset': { borderColor: '#ff4fa3', borderWidth: 1 }, '&:hover fieldset': { borderColor: '#ff4fa3' }, '&.Mui-focused fieldset': { borderColor: '#ff4fa3', borderWidth: 2 } }, 'input::placeholder': { color: '#bfa2c8', opacity: 0.8 } }}
+            />
+            {sellError && <Alert severity="error" sx={{ mt: 2 }}>{sellError}</Alert>}
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0, bgcolor: 'transparent', justifyContent: 'flex-end' }}>
+            <Button onClick={closeSellDialog} color="secondary" sx={{ fontWeight: 700, color: '#fff', mr: 1, bgcolor: 'transparent', '&:hover': { bgcolor: '#fff2' } }}>Annuler</Button>
+            <Button onClick={handleSellSubmit} variant="contained" sx={{ background: '#ff4fa3', color: '#fff', fontWeight: 700, borderRadius: 2.5, px: 3, fontSize: '1.08rem', boxShadow: '0 2px 12px 0 #ff4fa355', '&:hover': { background: '#e7125d' } }} disabled={sellLoading}>{sellItem?.prix_vente && sellItem?.date_vente ? 'Modifier' : 'Valider'}</Button>
           </DialogActions>
         </Dialog>
       </VuiBox>
